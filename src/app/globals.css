@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+/*
+ * Design system Jump — dois temas:
+ * - "jump-dark": identidade institucional (login, splash) — fundo
+ *   carvão quase preto + dourado, fiel ao site/logo da Jump.
+ * - "drivvo-light": tema do dashboard de gestão (claro), inspirado no
+ *   Drivvo, usando o dourado da marca como cor de destaque sobre fundo claro.
+ *
+ * A paleta abaixo foi extraída da logo oficial (public/brand/jump-logo.png).
+ * Será refinada/ajustada na Fase 8 (polish visual) se o manual de marca
+ * trouxer códigos de cor diferentes.
+ */
+
+:root {
+  color-scheme: light;
+
+  --background: #f6f7f9;
+  --foreground: #1c1a1b;
+
+  --card: #ffffff;
+  --card-foreground: #1c1a1b;
+
+  --muted: #eef0f3;
+  --muted-foreground: #6b7280;
+
+  --border: #e2e5ea;
+  --input: #e2e5ea;
+  --ring: #d9a441;
+
+  --primary: #c9922e;
+  --primary-foreground: #1c1a1b;
+
+  --secondary: #1c1a1b;
+  --secondary-foreground: #ffffff;
+
+  --accent: #fdf3e0;
+  --accent-foreground: #8a5f16;
+
+  --destructive: #d64545;
+  --destructive-foreground: #ffffff;
+
+  --success: #2e9e5b;
+  --success-foreground: #ffffff;
+
+  --warning: #dd9a1f;
+  --warning-foreground: #1c1a1b;
+
+  --radius: 0.75rem;
+}
+
+/* Tema institucional escuro (login / splash) */
+[data-theme="jump-dark"] {
+  color-scheme: dark;
+
+  --background: #1c1a1b;
+  --foreground: #f5f2ec;
+
+  --card: #262223;
+  --card-foreground: #f5f2ec;
+
+  --muted: #322d2e;
+  --muted-foreground: #b8afa8;
+
+  --border: #3a3435;
+  --input: #3a3435;
+  --ring: #d9a441;
+
+  --primary: #d9a441;
+  --primary-foreground: #1c1a1b;
+
+  --secondary: #f5f2ec;
+  --secondary-foreground: #1c1a1b;
+
+  --accent: #3a2f18;
+  --accent-foreground: #f2d681;
+
+  --destructive: #e2574c;
+  --destructive-foreground: #ffffff;
+
+  --success: #3fb571;
+  --success-foreground: #10241a;
+
+  --warning: #f2d681;
+  --warning-foreground: #1c1a1b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
+  /* Escala do dourado Jump, extraída da logo, para uso pontual
+     (gradientes, ícones, destaques) fora dos tokens semânticos acima. */
+  --color-jump-gold-light: #f2d681;
+  --color-jump-gold: #d9a441;
+  --color-jump-gold-dark: #a97c1f;
+  --color-jump-charcoal: #1c1a1b;
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-sm: calc(var(--radius) - 0.5rem);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
