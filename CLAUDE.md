@@ -58,9 +58,14 @@ placeholder em `src/app/(auth)/login/page.tsx` e
 ## Estrutura
 
 - `src/app/(auth)/` — login (tema escuro).
-- `src/app/(dashboard)/` — dashboard, veículos, abastecimento, manutenção,
-  alertas, relatórios, configurações (tema claro). Rotas ainda não
-  implementadas mostram `<ComingSoon />` indicando a fase responsável.
+- `src/app/(dashboard)/` — dashboard, veículos, manutenção, alertas,
+  relatórios, configurações (tema claro). Rotas ainda não implementadas
+  mostram `<ComingSoon />` indicando a fase responsável.
+- **Abastecimento foi removido** (decisão do cliente — não faz parte da
+  necessidade de uma empresa de cotas náuticas): sem tabela `refuels`, sem
+  telas, sem aba no veículo (migration `0008_remove_refuels.sql`). Se
+  reaparecer em algum código velho/comentário antigo, é resquício — não
+  reintroduzir sem pedido explícito.
 - `src/lib/battery/ingestion.ts` — abstração de ingestão de leitura de
   bateria (`BatteryReadingSource`). Manter a interface estável: é o ponto de
   extensão para uma futura integração com a Motorlog (sem API pública
@@ -74,9 +79,18 @@ placeholder em `src/app/(auth)/login/page.tsx` e
   redirect (`/login` ↔ `/dashboard`) conforme autenticação.
 - Veículos: CRUD completo em `src/app/(dashboard)/vehicles/` (list, new,
   `[id]`, `[id]/edit`, Server Actions em `actions.ts`), restrito a admin
-  para criar/editar/excluir (funcionário só lê). Sub-abas
-  `[id]/{battery,hours,refuels,maintenance}` são placeholders `<ComingSoon />`
-  até suas respectivas fases.
+  para criar/editar/remover (funcionário só lê). Sub-abas
+  `[id]/{battery,hours,maintenance}`.
+  **Remover veículo é sempre soft delete** (`deleted_at`, migration
+  `0009_vehicle_soft_delete.sql`) — nunca um DELETE de verdade, porque
+  `battery_readings`/`engine_hour_readings`/`maintenance_events`/`alerts`
+  têm `on delete cascade` pro `vehicle_id`; apagar a linha de verdade
+  apagaria o histórico de custo já gasto. `ArchiveVehicleDialog` exige
+  digitar o apelido exato do veículo pra confirmar (revalidado no servidor
+  em `archiveVehicle`, não só no client) — só admin, com
+  `ReactivateVehicleButton` pra desfazer. Veículos removidos somem das
+  listas ativas (`/vehicles`, `/dashboard`) mas continuam entrando nos
+  relatórios agregados (o dinheiro já foi gasto).
 - Bateria: `src/lib/battery/ingestion.ts` (`ManualBatteryReadingAdapter` grava
   via Supabase; `MotorlogApiAdapter` stub) + tela em
   `src/app/(dashboard)/vehicles/[id]/battery/` (gráfico de tendência Recharts
@@ -100,11 +114,9 @@ placeholder em `src/app/(auth)/login/page.tsx` e
   de contagem de horas da Fase 3 (o trigger no banco não distingue de onde
   veio o INSERT). Timeline colorida por tipo em
   `src/components/maintenance/event-type-badge.tsx`.
-- Abastecimento: `src/app/(dashboard)/refuels/` (lista global + novo) e
-  `src/app/(dashboard)/vehicles/[id]/refuels/` (aba do veículo), compartilhando
-  `RefuelForm`/`RefuelList`. Anexo de NF via `src/lib/storage/attachments.ts`
-  (bucket privado `attachments` + tabela genérica `attachments`, reaproveitada
-  pela Fase 5) — visualização por link assinado em
+- Anexos genéricos (NF/orçamento de manutenção) via
+  `src/lib/storage/attachments.ts` (bucket privado `attachments` + tabela
+  genérica `attachments`) — visualização por link assinado em
   `src/app/api/attachments/[id]/route.ts`.
 - `supabase/migrations/` — uma migration por fase (`0001_init.sql` = perfis
   + veículos; `0002_profile_provisioning.sql` = trigger que auto-cria perfil
@@ -113,7 +125,11 @@ placeholder em `src/app/(auth)/login/page.tsx` e
   = horas de motor, `maintenance_events`, e a lógica de alerta de revisão —
   tem uma Parte 2 opcional/pg_cron que deve ser colada e rodada
   separadamente, ver comentário no topo do arquivo; `0005_refuels.sql` =
-  abastecimento, tabela genérica `attachments`, e o bucket de Storage).
+  abastecimento — **removido na 0008**, ver abaixo — e tabela genérica
+  `attachments`/bucket de Storage, que continuam em uso; `0006_push_subscriptions.sql`;
+  `0007_push_webhook_trigger.sql`; `0008_remove_refuels.sql` = dropa
+  `refuels` e o enum `payment_method`; `0009_vehicle_soft_delete.sql` =
+  `vehicles.deleted_at`).
   `supabase/seed.sql` — dados de demonstração (ainda não aplicado pelo
   usuário).
 - Dashboards/relatórios: `src/lib/reports/aggregate.ts` (agregação pura em
@@ -137,15 +153,13 @@ placeholder em `src/app/(auth)/login/page.tsx` e
   redirect pro `/login` como se fosse o service worker (bug real encontrado
   e corrigido nesta fase), e o webhook do Supabase em `/api/push/notify`
   seria redirecionado antes de rodar (ele chega sem cookie de sessão).
-  Fila offline: `src/lib/offline/{db.ts,sync-manager.ts}` (Dexie) — os 3
-  formulários de campo (bateria, horas, abastecimento sem anexo) usam
-  `src/hooks/use-offline-submit.ts`, que tenta o POST direto e cai pra fila
-  local se estiver offline ou a rede falhar no meio do caminho; `Route
-  Handlers` em `src/app/api/{battery-readings,engine-hour-readings,refuels}`
-  são o único caminho de escrita pra esses três (usado tanto no envio
-  direto quanto pela fila). `SyncStatusBadge` na TopBar mostra
-  offline/pendências. Abastecimento **com** anexo continua exigindo conexão
-  (a Server Action de `refuels/actions.ts` lida com o upload do arquivo).
+  Fila offline: `src/lib/offline/{db.ts,sync-manager.ts}` (Dexie) — os
+  formulários de campo (bateria, horas) usam `src/hooks/use-offline-submit.ts`,
+  que tenta o POST direto e cai pra fila local se estiver offline ou a rede
+  falhar no meio do caminho; `Route Handlers` em
+  `src/app/api/{battery-readings,engine-hour-readings}` são o único caminho
+  de escrita pra esses dois (usado tanto no envio direto quanto pela fila).
+  `SyncStatusBadge` na TopBar mostra offline/pendências.
   Web Push: migration `0006_push_subscriptions.sql` + `src/lib/push/`
   (assinatura no browser) + `/api/push/subscribe` (salva) + `/api/push/notify`
   (rota comum do Next, **não** Edge Function — mais simples de configurar:

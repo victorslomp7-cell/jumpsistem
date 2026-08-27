@@ -3,10 +3,9 @@
 import { offlineDB, type OutboxItem, type OutboxKind } from "./db";
 
 /**
- * Fila de mutações offline: os 3 formulários de campo (bateria, horas,
- * abastecimento) gravam aqui primeiro quando não há conexão (ou quando o
- * envio direto falha por erro de rede), e esta fila tenta reenviar sozinha
- * quando a conexão volta.
+ * Fila de mutações offline: os formulários de campo (bateria, horas) gravam
+ * aqui primeiro quando não há conexão (ou quando o envio direto falha por
+ * erro de rede), e esta fila tenta reenviar sozinha quando a conexão volta.
  *
  * Deliberadamente simples (sem Background Sync API — suporte fraco no
  * Safari/iOS, ver CLAUDE.md): sincroniza no evento `online`, num intervalo

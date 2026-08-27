@@ -78,7 +78,8 @@ fase:
 1. Autenticação + cadastro de veículos — ✅
 2. Controle de bateria (bloqueio automático <12V) — ✅
 3. Horas de motor e alertas de revisão — ✅
-4. Abastecimento — ✅
+4. ~~Abastecimento~~ — removido a pedido do cliente (não fazia parte da
+   necessidade real de uma empresa de cotas náuticas)
 5. Manutenção e histórico — ✅
 6. Dashboards e relatórios — ✅
 7. PWA offline-first + notificações push — ✅

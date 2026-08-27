@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { VehicleStatusBadge } from "@/components/vehicles/vehicle-status-badge";
 import { VehicleAlertBadges } from "@/components/vehicles/vehicle-alert-badges";
+import { ReactivateVehicleButton } from "@/components/vehicles/reactivate-vehicle-button";
 import { VEHICLE_TYPE_LABELS, type Alert, type Vehicle } from "@/types/domain";
 
 export default async function VehiclesPage() {
@@ -16,7 +17,9 @@ export default async function VehiclesPage() {
   ]);
 
   const isAdmin = current?.profile?.role === "admin";
-  const vehicles = (vehiclesResult.data as Vehicle[] | null) ?? [];
+  const allVehicles = (vehiclesResult.data as Vehicle[] | null) ?? [];
+  const vehicles = allVehicles.filter((v) => !v.deleted_at);
+  const archivedVehicles = allVehicles.filter((v) => v.deleted_at);
 
   const alertsByVehicle = new Map<string, Alert[]>();
   for (const alert of (openAlerts as Alert[] | null) ?? []) {
@@ -94,6 +97,38 @@ export default async function VehiclesPage() {
             </tbody>
           </table>
         </Card>
+      )}
+
+      {isAdmin && archivedVehicles.length > 0 && (
+        <details className="rounded-lg border border-border">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-muted-foreground">
+            Veículos removidos ({archivedVehicles.length}) — histórico continua nos relatórios
+          </summary>
+          <table className="w-full text-sm">
+            <thead className="border-y border-border text-left text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3 font-medium">Apelido</th>
+                <th className="px-4 py-3 font-medium">Tipo</th>
+                <th className="px-4 py-3 font-medium">Removido em</th>
+                <th className="px-4 py-3 font-medium">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {archivedVehicles.map((vehicle) => (
+                <tr key={vehicle.id} className="border-b border-border last:border-0">
+                  <td className="px-4 py-3 text-muted-foreground">{vehicle.nickname}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{VEHICLE_TYPE_LABELS[vehicle.type]}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {new Date(vehicle.deleted_at!).toLocaleDateString("pt-BR")}
+                  </td>
+                  <td className="px-4 py-3">
+                    <ReactivateVehicleButton vehicleId={vehicle.id} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </details>
       )}
     </div>
   );

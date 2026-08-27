@@ -5,7 +5,6 @@ const TABS = [
   { segment: "", label: "Geral" },
   { segment: "battery", label: "Bateria" },
   { segment: "hours", label: "Horas" },
-  { segment: "refuels", label: "Abastecimento" },
   { segment: "maintenance", label: "Manutenção" },
 ] as const;
 

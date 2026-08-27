@@ -4,13 +4,12 @@ import { getCurrentProfile } from "@/lib/auth/current-profile";
 import { Card, CardContent, CardHeader, CardTitle, CardValue } from "@/components/ui/card";
 import { VehicleStatusBadge } from "@/components/vehicles/vehicle-status-badge";
 import { VehicleAlertBadges } from "@/components/vehicles/vehicle-alert-badges";
-import { DonutCostChart } from "@/components/charts/donut-cost-chart";
-import { totalCostByCategory } from "@/lib/reports/aggregate";
-import { VEHICLE_TYPE_LABELS, type Alert, type MaintenanceEvent, type Refuel, type Vehicle } from "@/types/domain";
+import { totalMaintenanceCost } from "@/lib/reports/aggregate";
+import { VEHICLE_TYPE_LABELS, type Alert, type MaintenanceEvent, type Vehicle } from "@/types/domain";
 
 /*
- * Dashboard geral. O card/donut de custo (financeiro agregado) só aparece
- * pra admin — funcionário vê o operacional (frota, alertas, bloqueios).
+ * Dashboard geral. O card de custo (financeiro agregado) só aparece pra
+ * admin — funcionário vê o operacional (frota, alertas, bloqueios).
  */
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -21,12 +20,9 @@ export default async function DashboardPage() {
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const cutoff = thirtyDaysAgo.toISOString().slice(0, 10);
 
-  const [{ data: vehicles }, { data: openAlerts }, refuelsResult, eventsResult] = await Promise.all([
-    supabase.from("vehicles").select("*").order("nickname"),
+  const [{ data: vehicles }, { data: openAlerts }, eventsResult] = await Promise.all([
+    supabase.from("vehicles").select("*").is("deleted_at", null).order("nickname"),
     supabase.from("alerts").select("*").eq("status", "open"),
-    isAdmin
-      ? supabase.from("refuels").select("*").gte("refuel_date", cutoff)
-      : Promise.resolve({ data: null }),
     isAdmin
       ? supabase.from("maintenance_events").select("*").gte("event_date", cutoff)
       : Promise.resolve({ data: null }),
@@ -44,11 +40,8 @@ export default async function DashboardPage() {
     alertsByVehicle.set(alert.vehicle_id, list);
   }
 
-  const costs = isAdmin
-    ? totalCostByCategory(
-        (refuelsResult.data as Refuel[] | null) ?? [],
-        (eventsResult.data as MaintenanceEvent[] | null) ?? []
-      )
+  const maintenanceCost30d = isAdmin
+    ? totalMaintenanceCost((eventsResult.data as MaintenanceEvent[] | null) ?? [])
     : null;
 
   return (
@@ -93,13 +86,13 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {isAdmin && costs && (
+      {isAdmin && maintenanceCost30d !== null && (
         <Card>
           <CardHeader>
-            <CardTitle>Custo por categoria (30 dias) — R$ {(costs.refuels + costs.maintenance).toFixed(2)}</CardTitle>
+            <CardTitle>Custo de manutenção (30 dias)</CardTitle>
           </CardHeader>
           <CardContent>
-            <DonutCostChart costs={costs} />
+            <CardValue>R$ {maintenanceCost30d.toFixed(2)}</CardValue>
           </CardContent>
         </Card>
       )}

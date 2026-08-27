@@ -73,16 +73,58 @@ export async function updateVehicle(
   redirect(`/vehicles/${vehicleId}`);
 }
 
-export async function deleteVehicle(vehicleId: string) {
+export interface ArchiveActionState {
+  error?: string;
+}
+
+/**
+ * "Remover" um veículo é sempre um soft delete (arquivamento) — nunca um
+ * DELETE de verdade. Isso garante que battery_readings/engine_hour_readings/
+ * maintenance_events/alerts (todos com `on delete cascade` pro vehicle_id)
+ * nunca são atingidos: o histórico de manutenção já pago continua contando
+ * nos relatórios mesmo depois do veículo sair da frota ativa.
+ *
+ * Confirmação por texto (o admin precisa digitar o apelido exato do
+ * veículo) é revalidada aqui no servidor, não só no client — evita remoção
+ * por engano mesmo que alguém adultere o formulário.
+ */
+export async function archiveVehicle(
+  vehicleId: string,
+  _prevState: ArchiveActionState | undefined,
+  formData: FormData
+): Promise<ArchiveActionState> {
   await requireAdmin();
 
   const supabase = await createClient();
-  const { error } = await supabase.from("vehicles").delete().eq("id", vehicleId);
+  const { data: vehicle } = await supabase.from("vehicles").select("*").eq("id", vehicleId).maybeSingle();
+  if (!vehicle) return { error: "Veículo não encontrado." };
 
-  if (error) {
-    throw new Error(`Erro ao excluir: ${error.message}`);
+  const confirmation = String(formData.get("confirmation") ?? "").trim();
+  if (confirmation !== vehicle.nickname) {
+    return { error: `Digite exatamente "${vehicle.nickname}" para confirmar.` };
   }
 
+  const { error } = await supabase
+    .from("vehicles")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", vehicleId);
+
+  if (error) return { error: `Erro ao remover: ${error.message}` };
+
   revalidatePath("/vehicles");
+  revalidatePath(`/vehicles/${vehicleId}`);
+  revalidatePath("/dashboard");
   redirect("/vehicles");
+}
+
+export async function reactivateVehicle(vehicleId: string) {
+  await requireAdmin();
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("vehicles").update({ deleted_at: null }).eq("id", vehicleId);
+
+  if (error) throw new Error(`Erro ao reativar: ${error.message}`);
+
+  revalidatePath("/vehicles");
+  revalidatePath(`/vehicles/${vehicleId}`);
 }

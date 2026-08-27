@@ -7,7 +7,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { VehicleTabs } from "@/components/vehicles/vehicle-tabs";
 import { VehicleStatusBadge } from "@/components/vehicles/vehicle-status-badge";
 import { VehicleAlertBadges } from "@/components/vehicles/vehicle-alert-badges";
-import { DeleteVehicleButton } from "@/components/vehicles/delete-vehicle-button";
+import { ArchiveVehicleDialog } from "@/components/vehicles/archive-vehicle-dialog";
+import { ReactivateVehicleButton } from "@/components/vehicles/reactivate-vehicle-button";
+import { Badge } from "@/components/ui/badge";
 import { VEHICLE_TYPE_LABELS, type Alert, type Vehicle } from "@/types/domain";
 
 export default async function VehicleDetailPage({
@@ -34,6 +36,7 @@ export default async function VehicleDetailPage({
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-semibold">{vehicle.nickname}</h1>
+            {vehicle.deleted_at && <Badge variant="destructive">Removido</Badge>}
             <VehicleAlertBadges alerts={vehicleAlerts} />
           </div>
           <p className="text-sm text-muted-foreground">
@@ -42,10 +45,19 @@ export default async function VehicleDetailPage({
         </div>
         {isAdmin && (
           <div className="flex gap-2">
-            <Link href={`/vehicles/${vehicle.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-              Editar
-            </Link>
-            <DeleteVehicleButton vehicleId={vehicle.id} />
+            {vehicle.deleted_at ? (
+              <ReactivateVehicleButton vehicleId={vehicle.id} />
+            ) : (
+              <>
+                <Link
+                  href={`/vehicles/${vehicle.id}/edit`}
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  Editar
+                </Link>
+                <ArchiveVehicleDialog vehicleId={vehicle.id} nickname={vehicle.nickname} />
+              </>
+            )}
           </div>
         )}
       </div>

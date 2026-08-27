@@ -1,6 +1,6 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { MonthlyCost } from "@/lib/reports/aggregate";
 
 function formatMonth(month: string) {
@@ -27,12 +27,10 @@ export function MonthlyCostChart({ data }: { data: MonthlyCost[] }) {
           <XAxis dataKey="monthLabel" tick={{ fontSize: 12 }} stroke="var(--muted-foreground)" />
           <YAxis width={48} tick={{ fontSize: 12 }} stroke="var(--muted-foreground)" />
           <Tooltip
-            formatter={(value, name) => [`R$ ${Number(value).toFixed(2)}`, name]}
+            formatter={(value) => [`R$ ${Number(value).toFixed(2)}`, "Manutenção"]}
             contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
           />
-          <Legend />
-          <Bar dataKey="refuels" name="Abastecimento" fill="var(--color-jump-gold)" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="maintenance" name="Manutenção" fill="var(--color-jump-charcoal)" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="cost" name="Manutenção" fill="var(--color-jump-gold)" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable } from "dexie";
 
-export type OutboxKind = "battery" | "hours" | "refuel";
+export type OutboxKind = "battery" | "hours";
 
 export interface OutboxItem {
   id?: number;

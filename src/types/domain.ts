@@ -35,6 +35,8 @@ export interface Vehicle {
   status: VehicleStatus;
   created_at: string;
   updated_at: string;
+  /** Arquivamento (soft delete) — nunca null real-delete, pra nunca perder histórico já gasto. */
+  deleted_at: string | null;
 }
 
 export const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
@@ -131,35 +133,7 @@ export const MAINTENANCE_EVENT_TYPE_LABELS: Record<MaintenanceEventType, string>
   outro: "Outro",
 };
 
-export type PaymentMethod = "dinheiro" | "cartao" | "pix" | "boleto" | "outro";
-
-export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  dinheiro: "Dinheiro",
-  cartao: "Cartão",
-  pix: "Pix",
-  boleto: "Boleto",
-  outro: "Outro",
-};
-
-export interface Refuel {
-  id: string;
-  vehicle_id: string;
-  refuel_date: string;
-  engine_hours: number | null;
-  fuel_type: string;
-  liters: number;
-  price_per_liter: number | null;
-  total_value: number;
-  gas_station: string | null;
-  full_tank: boolean;
-  payment_method: PaymentMethod | null;
-  driver_name: string | null;
-  created_by: string | null;
-  notes: string | null;
-  created_at: string;
-}
-
-export type AttachmentOwnerType = "refuel" | "maintenance_event" | "vehicle";
+export type AttachmentOwnerType = "maintenance_event" | "vehicle";
 
 export interface Attachment {
   id: string;
