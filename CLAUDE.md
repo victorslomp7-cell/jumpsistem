@@ -152,6 +152,10 @@ placeholder em `src/app/(auth)/login/page.tsx` e
   só um Database Webhook do Supabase na tabela `alerts`, evento INSERT,
   apontando pra essa rota com o header `x-webhook-secret`) +
   `src/lib/supabase/admin.ts` (service role, só usado ali, nunca no client).
+  `0007_push_webhook_trigger.sql` é um caminho alternativo pro mesmo
+  resultado via `pg_net` direto no banco (trigger chamando `net.http_post`)
+  — usado porque a UI de "Database Webhooks" não apareceu no painel do
+  usuário; equivalente funcional ao Database Webhook, só que 100% SQL.
 - Testes: `npm run test` (Vitest) cobre as regras puras críticas
   (`src/lib/battery/ingestion.test.ts`, `src/lib/hours/revision.test.ts`,
   `src/lib/reports/aggregate.test.ts`) — também rodado no CI.
