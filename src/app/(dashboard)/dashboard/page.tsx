@@ -1,21 +1,35 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/auth/current-profile";
 import { Card, CardContent, CardHeader, CardTitle, CardValue } from "@/components/ui/card";
 import { VehicleStatusBadge } from "@/components/vehicles/vehicle-status-badge";
 import { VehicleAlertBadges } from "@/components/vehicles/vehicle-alert-badges";
-import { VEHICLE_TYPE_LABELS, type Alert, type Vehicle } from "@/types/domain";
+import { DonutCostChart } from "@/components/charts/donut-cost-chart";
+import { totalCostByCategory } from "@/lib/reports/aggregate";
+import { VEHICLE_TYPE_LABELS, type Alert, type MaintenanceEvent, type Refuel, type Vehicle } from "@/types/domain";
 
 /*
- * Dashboard geral. Custo total e gráficos mensais chegam na Fase 6
- * (Dashboards/Relatórios) — os cards abaixo já refletem dados reais de
- * veículos/alertas assim que existirem.
+ * Dashboard geral. O card/donut de custo (financeiro agregado) só aparece
+ * pra admin — funcionário vê o operacional (frota, alertas, bloqueios).
  */
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const current = await getCurrentProfile();
+  const isAdmin = current?.profile?.role === "admin";
 
-  const [{ data: vehicles }, { data: openAlerts }] = await Promise.all([
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const cutoff = thirtyDaysAgo.toISOString().slice(0, 10);
+
+  const [{ data: vehicles }, { data: openAlerts }, refuelsResult, eventsResult] = await Promise.all([
     supabase.from("vehicles").select("*").order("nickname"),
     supabase.from("alerts").select("*").eq("status", "open"),
+    isAdmin
+      ? supabase.from("refuels").select("*").gte("refuel_date", cutoff)
+      : Promise.resolve({ data: null }),
+    isAdmin
+      ? supabase.from("maintenance_events").select("*").gte("event_date", cutoff)
+      : Promise.resolve({ data: null }),
   ]);
 
   const vehicleList = (vehicles as Vehicle[] | null) ?? [];
@@ -30,12 +44,23 @@ export default async function DashboardPage() {
     alertsByVehicle.set(alert.vehicle_id, list);
   }
 
+  const costs = isAdmin
+    ? totalCostByCategory(
+        (refuelsResult.data as Refuel[] | null) ?? [],
+        (eventsResult.data as MaintenanceEvent[] | null) ?? []
+      )
+    : null;
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Visão geral da frota</h1>
         <p className="text-sm text-muted-foreground">
-          Custo total e gráficos mensais chegam na Fase 6 (Dashboards/Relatórios).
+          Relatórios detalhados e por veículo em{" "}
+          <Link href="/reports" className="text-primary underline">
+            Relatórios
+          </Link>
+          .
         </p>
       </div>
 
@@ -67,6 +92,17 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {isAdmin && costs && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Custo por categoria (30 dias) — R$ {(costs.refuels + costs.maintenance).toFixed(2)}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DonutCostChart costs={costs} />
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

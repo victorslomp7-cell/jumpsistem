@@ -113,9 +113,17 @@ placeholder em `src/app/(auth)/login/page.tsx` e
   abastecimento, tabela genérica `attachments`, e o bucket de Storage).
   `supabase/seed.sql` — dados de demonstração (ainda não aplicado pelo
   usuário).
+- Dashboards/relatórios: `src/lib/reports/aggregate.ts` (agregação pura em
+  memória — dataset pequeno, sem view/materialização no banco por ora) +
+  gráficos Recharts em `src/components/charts/`. `/reports` e
+  `/reports/[vehicleId]` são **restritos a admin** (relatório financeiro
+  agregado, conforme decisão de RLS do projeto); o card de custo do
+  `/dashboard` também só aparece pra admin. Alertas (`VehicleAlertBadges`)
+  aparecem direto no veículo (lista, ficha, tabela do dashboard), não só na
+  Central de Alertas.
 - Testes: `npm run test` (Vitest) cobre as regras puras críticas
-  (`src/lib/battery/ingestion.test.ts`, `src/lib/hours/revision.test.ts`) —
-  também rodado no CI.
+  (`src/lib/battery/ingestion.test.ts`, `src/lib/hours/revision.test.ts`,
+  `src/lib/reports/aggregate.test.ts`) — também rodado no CI.
 
 ## Convenções
 
