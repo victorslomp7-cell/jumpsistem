@@ -4,8 +4,8 @@ import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis
 import type { ModelComparisonRow } from "@/lib/reports/compare-models";
 
 const COLOR_BY_TYPE = {
-  jet_ski: "var(--color-jump-gold)",
-  lancha: "var(--color-jump-navy)",
+  jet_ski: "var(--color-chart-jetski)",
+  lancha: "var(--color-chart-lancha)",
   outro: "var(--muted-foreground)",
 } as const;
 

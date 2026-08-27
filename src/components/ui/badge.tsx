@@ -10,7 +10,7 @@ const badgeVariants = cva(
         default: "bg-muted text-muted-foreground",
         primary: "bg-accent text-accent-foreground",
         success: "bg-success/15 text-success",
-        warning: "bg-warning/25 text-warning-foreground",
+        warning: "bg-warning/25 text-warning",
         destructive: "bg-destructive/15 text-destructive",
       },
     },

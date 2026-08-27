@@ -38,11 +38,33 @@ migrations), não gerado por `supabase gen types`.
 
 Dois temas via atributo `data-theme` em `src/app/globals.css` (Tailwind v4,
 tokens CSS, sem `tailwind.config.ts`):
-- `jump-dark` (default do grupo de rotas `(auth)`) — identidade institucional
-  da Jump, gradiente de azul-marinho (`from-jump-navy-dark via-jump-navy
-  to-jump-navy-darker`) + dourado como destaque.
-- tema claro (default global) — dashboard de gestão, estilo Drivvo, dourado
-  como cor de destaque sobre fundo claro.
+- `jump-dark` — identidade institucional da Jump, azul-marinho + dourado
+  como destaque. Aplicado tanto no grupo de rotas `(auth)` (login, com o
+  gradiente `from-jump-navy-dark via-jump-navy to-jump-navy-darker`) quanto
+  no `(dashboard)` inteiro (`data-theme="jump-dark"` direto no
+  `(dashboard)/layout.tsx`, fundo sólido `bg-background`) — o cliente pediu
+  explicitamente o tema navy em todo o sistema, não só na tela de login
+  (decisão de 2026-08-27, revisando a divisão dark/claro do plano
+  original).
+- tema claro (`:root`, sem `data-theme`) — mantido como tema nomeado no
+  design system, mas **não está em uso em nenhuma rota hoje**. Não remover
+  (pode servir de base pra uma superfície clara futura, ex. print/PDF), mas
+  também não assumir que ele é visível em produção.
+
+**Cores por tipo de veículo (gráficos/chips) são tokens à parte, não os
+tokens de marca crus**: `--chart-jetski`/`--chart-lancha` (Recharts) e
+`--chip-revision`/`--chip-part`/`--chip-battery` (badges de tipo de evento
+de manutenção) — cada um definido em `:root` E em `[data-theme="jump-dark"]`
+com valores diferentes. Motivo: o navy da marca (`--color-jump-navy`) usado
+como cor de "lancha"/texto quase desaparece agora que o fundo do dashboard
+também é navy — nesses tokens o tema escuro usa tons mais claros
+(azul-claro, dourado-claro) só pra manter contraste. **Regra pra qualquer
+cor nova que apareça tanto no dashboard quanto no login**: sempre um token
+semântico com valor por tema em `globals.css`, nunca uma classe Tailwind de
+cor crua (`bg-blue-500`, `text-amber-800` etc.) direto no componente — isso
+já causou um bug real (badges de manutenção com `text-amber-800`/
+`text-blue-700` hardcoded, ilegíveis depois que o dashboard ficou navy;
+corrigido nos tokens `--chip-*` acima).
 
 Paleta de azul-marinho + dourado confirmada pelo cliente como as "cores
 base" oficiais da marca (a logo mostra a coroa dourada sobre fundo

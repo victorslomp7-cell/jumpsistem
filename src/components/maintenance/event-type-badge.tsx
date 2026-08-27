@@ -3,9 +3,9 @@ import { MAINTENANCE_EVENT_TYPE_LABELS, type MaintenanceEventType } from "@/type
 import { cn } from "@/lib/utils";
 
 const CONFIG: Record<MaintenanceEventType, { icon: typeof Wrench; className: string }> = {
-  revisao: { icon: CalendarCheck2, className: "bg-jump-gold/15 text-jump-gold-dark" },
-  troca_peca: { icon: Wrench, className: "bg-amber-700/15 text-amber-800" },
-  troca_bateria: { icon: BatteryCharging, className: "bg-blue-500/15 text-blue-700" },
+  revisao: { icon: CalendarCheck2, className: "bg-chip-revision/15 text-chip-revision" },
+  troca_peca: { icon: Wrench, className: "bg-chip-part/15 text-chip-part" },
+  troca_bateria: { icon: BatteryCharging, className: "bg-chip-battery/15 text-chip-battery" },
   outro: { icon: CircleEllipsis, className: "bg-muted text-muted-foreground" },
 };
 

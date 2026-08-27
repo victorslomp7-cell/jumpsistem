@@ -7,7 +7,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const current = await getCurrentProfile();
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div data-theme="jump-dark" className="flex min-h-screen bg-background text-foreground">
       <Sidebar />
       <div className="flex flex-1 flex-col pb-16 md:pb-0">
         <TopBar email={current?.email ?? null} profile={current?.profile ?? null} />

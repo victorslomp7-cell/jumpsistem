@@ -33,7 +33,7 @@ export function MaintenanceProgressionChart({ data }: { data: MaintenanceProgres
             type="stepAfter"
             dataKey="jet_ski"
             name="Jet ski"
-            stroke="var(--color-jump-gold)"
+            stroke="var(--color-chart-jetski)"
             strokeWidth={2}
             dot={{ r: 2 }}
           />
@@ -41,7 +41,7 @@ export function MaintenanceProgressionChart({ data }: { data: MaintenanceProgres
             type="stepAfter"
             dataKey="lancha"
             name="Lancha"
-            stroke="var(--color-jump-navy)"
+            stroke="var(--color-chart-lancha)"
             strokeWidth={2}
             dot={{ r: 2 }}
           />

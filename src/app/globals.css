@@ -2,17 +2,20 @@
 
 /*
  * Design system Jump — dois temas:
- * - "jump-dark": identidade institucional (login) — gradiente de azul-marinho
- *   + dourado, fiel à logo oficial (coroa dourada sobre fundo azul-marinho —
- *   "cores base" da marca, conforme confirmado pelo cliente).
- * - tema claro (dashboard de gestão) — inspirado no Drivvo, dourado como
- *   cor de destaque sobre fundo claro, com toques de azul-marinho na marca
- *   (ex.: selo da logo na sidebar) pra amarrar com o tema escuro.
+ * - "jump-dark": identidade institucional da marca — azul-marinho + dourado,
+ *   fiel à logo oficial (coroa dourada sobre fundo azul-marinho — "cores
+ *   base" da marca, confirmado pelo cliente). Aplicado tanto no login
+ *   (`(auth)/layout.tsx`) quanto no dashboard inteiro
+ *   (`(dashboard)/layout.tsx`) — o cliente pediu o tema navy em todo o
+ *   sistema, não só na tela de login.
+ * - tema claro (`:root`, sem `data-theme`): mantido como tema nomeado no
+ *   design system (não removido), só não é aplicado em nenhuma rota hoje.
+ *   Existe caso surja pedido futuro de uma superfície clara (ex.: PDF/print).
  *
- * Paleta de azul extraída visualmente da logo com fundo oficial enviada
- * pelo cliente — poderá ser ajustada com precisão de pixel assim que o
- * arquivo (PNG/SVG) chegar como anexo real (hoje só temos a versão colada
- * no chat, sem arquivo salvo em disco).
+ * Qualquer cor que apareça em ambos os temas (badges, gráficos) precisa de
+ * um token semântico aqui — nunca uma cor Tailwind hardcoded (bg-blue-500
+ * etc.) direto no componente, porque aí ela não muda com o tema e pode
+ * ficar ilegível num dos dois fundos.
  */
 
 :root {
@@ -50,6 +53,21 @@
   --warning-foreground: #14202c;
 
   --radius: 0.75rem;
+
+  /* Cores de série dos gráficos por tipo de veículo — separadas dos tokens
+     de marca porque precisam de um valor diferente em cada tema: no tema
+     claro "lancha" usa o navy da marca (contrasta bem no fundo claro); no
+     tema escuro o mesmo navy quase desaparece sobre o fundo também navy,
+     então essa série vira um azul-claro/prateado nesse tema. */
+  --chart-jetski: var(--color-jump-gold, #d9a441);
+  --chart-lancha: var(--color-jump-navy, #123a5c);
+
+  /* Cores dos chips de tipo de evento de manutenção — mesmo motivo dos
+     tokens de gráfico acima: precisam de um tom por tema pra continuar
+     legíveis. */
+  --chip-revision: #a97c1f;
+  --chip-part: #92400e;
+  --chip-battery: #1d4ed8;
 }
 
 /* Tema institucional escuro (login) — azul-marinho em gradiente + dourado */
@@ -86,6 +104,16 @@
 
   --warning: #f2d681;
   --warning-foreground: #0a2540;
+
+  /* "Lancha" muda pra um azul-claro/prateado nesse tema — o navy da marca
+     some sobre o fundo também navy (ver comentário no :root). */
+  --chart-lancha: #8fb4d6;
+
+  /* Tons claros pra continuar legível sobre o navy (o mesmo motivo do
+     --chart-lancha acima). */
+  --chip-revision: #f2d681;
+  --chip-part: #f4c07a;
+  --chip-battery: #7ab8ff;
 }
 
 @theme inline {
@@ -119,6 +147,17 @@
 
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+
+  /* Cores de série dos gráficos por tipo de veículo (jet ski/lancha) —
+     variam por tema, ver definição em :root/[data-theme="jump-dark"]. */
+  --color-chart-jetski: var(--chart-jetski);
+  --color-chart-lancha: var(--chart-lancha);
+
+  /* Chips de tipo de evento de manutenção — variam por tema, ver definição
+     em :root/[data-theme="jump-dark"]. */
+  --color-chip-revision: var(--chip-revision);
+  --color-chip-part: var(--chip-part);
+  --color-chip-battery: var(--chip-battery);
 
   /* Escala do dourado Jump (coroa da logo), pra uso pontual (gradientes,
      ícones, destaques) fora dos tokens semânticos acima. */
