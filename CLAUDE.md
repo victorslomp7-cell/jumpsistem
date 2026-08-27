@@ -82,11 +82,25 @@ placeholder em `src/app/(auth)/login/page.tsx` e
 - Alertas: `src/app/(dashboard)/alerts/` lê a tabela `alerts` (populada pelo
   trigger de bateria hoje; revisão entra na Fase 3) e permite
   reconhecer/resolver.
+- Horas/revisão: `src/lib/hours/revision.ts` (regra pura, `evaluateRevision`)
+  + tela em `src/app/(dashboard)/vehicles/[id]/hours/` (progresso até a
+  próxima revisão, lançar leitura, registrar revisão concluída). A decisão
+  de abrir/fechar alerta de revisão vive no banco
+  (`evaluate_vehicle_revision`, 0004) — triggers reavaliam em tempo real ao
+  lançar horas, registrar revisão, ou o admin editar o intervalo/aviso do
+  veículo; o cron diário (Parte 2 de 0004, pg_cron) é só rede de segurança.
+- `maintenance_events` já existe desde a Fase 3 (schema completo pensando
+  na Fase 5), mas só é usado por enquanto para `is_revision = true` — a
+  tela de histórico completo (com anexos/orçamento/garantia) é da Fase 5.
 - `supabase/migrations/` — uma migration por fase (`0001_init.sql` = perfis
   + veículos; `0002_profile_provisioning.sql` = trigger que auto-cria perfil
   `funcionario` em `auth.users` novo; `0003_battery.sql` = leituras de
-  bateria, alertas, e o trigger de bloqueio <12V). `supabase/seed.sql` —
-  dados de demonstração (ainda não aplicado pelo usuário).
+  bateria, alertas, e o trigger de bloqueio <12V; `0004_hours_revision.sql`
+  = horas de motor, `maintenance_events`, e a lógica de alerta de revisão —
+  tem uma Parte 2 opcional/pg_cron que deve ser colada e rodada
+  separadamente, ver comentário no topo do arquivo).
+  `supabase/seed.sql` — dados de demonstração (ainda não aplicado pelo
+  usuário).
 - Testes: `npm run test` (Vitest) cobre as regras puras críticas
   (`src/lib/battery/ingestion.test.ts`, `src/lib/hours/revision.test.ts`) —
   também rodado no CI.

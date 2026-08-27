@@ -95,3 +95,38 @@ export const ALERT_STATUS_LABELS: Record<AlertStatus, string> = {
   acknowledged: "Reconhecido",
   resolved: "Resolvido",
 };
+
+export interface EngineHourReading {
+  id: string;
+  vehicle_id: string;
+  hours: number;
+  read_at: string;
+  recorded_by: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export type MaintenanceEventType = "revisao" | "troca_peca" | "troca_bateria" | "outro";
+
+export interface MaintenanceEvent {
+  id: string;
+  vehicle_id: string;
+  type: MaintenanceEventType;
+  description: string;
+  event_date: string;
+  cost: number | null;
+  budget: number | null;
+  warranty_until: string | null;
+  is_revision: boolean;
+  hours_at_event: number | null;
+  created_by: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export const MAINTENANCE_EVENT_TYPE_LABELS: Record<MaintenanceEventType, string> = {
+  revisao: "Revisão",
+  troca_peca: "Troca de peça",
+  troca_bateria: "Troca de bateria",
+  outro: "Outro",
+};

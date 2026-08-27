@@ -152,6 +152,84 @@ export interface Database {
         };
         Relationships: [];
       };
+      engine_hour_readings: {
+        Row: {
+          id: string;
+          vehicle_id: string;
+          hours: number;
+          read_at: string;
+          recorded_by: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          vehicle_id: string;
+          hours: number;
+          read_at?: string;
+          recorded_by?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          vehicle_id?: string;
+          hours?: number;
+          read_at?: string;
+          recorded_by?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      maintenance_events: {
+        Row: {
+          id: string;
+          vehicle_id: string;
+          type: "revisao" | "troca_peca" | "troca_bateria" | "outro";
+          description: string;
+          event_date: string;
+          cost: number | null;
+          budget: number | null;
+          warranty_until: string | null;
+          is_revision: boolean;
+          hours_at_event: number | null;
+          created_by: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          vehicle_id: string;
+          type: "revisao" | "troca_peca" | "troca_bateria" | "outro";
+          description: string;
+          event_date?: string;
+          cost?: number | null;
+          budget?: number | null;
+          warranty_until?: string | null;
+          is_revision?: boolean;
+          hours_at_event?: number | null;
+          created_by?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          vehicle_id?: string;
+          type?: "revisao" | "troca_peca" | "troca_bateria" | "outro";
+          description?: string;
+          event_date?: string;
+          cost?: number | null;
+          budget?: number | null;
+          warranty_until?: string | null;
+          is_revision?: boolean;
+          hours_at_event?: number | null;
+          created_by?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -163,6 +241,7 @@ export interface Database {
       alert_type: "battery_low" | "revision_due" | "revision_overdue";
       alert_severity: "info" | "warning" | "critical";
       alert_status: "open" | "acknowledged" | "resolved";
+      maintenance_event_type: "revisao" | "troca_peca" | "troca_bateria" | "outro";
     };
     CompositeTypes: Record<string, never>;
   };
