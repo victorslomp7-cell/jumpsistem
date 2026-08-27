@@ -54,22 +54,26 @@ arquivo de marca com códigos de cor precisos).
 — essa outra variante de logo/nome foi mostrada mas descartada pelo
 cliente).
 
-**Atenção — ainda sem arquivo de logo de verdade**: o cliente já colou duas
-versões da logo no chat (coroa dourada sobre fundo branco, e a mesma coroa
-sobre fundo azul-marinho com o nome "JUMP COTAS NÁUTICAS") mas nenhuma
-chegou como *anexo* (só coladas inline) — esta sessão não consegue salvar
-imagem colada em arquivo, só recebe de verdade quando vem como anexo (igual
-o PDF antigo). Até o arquivo real chegar, `src/components/brand/brand-mark.tsx`
-é um wordmark textual (selo "J" navy+dourado + "JUMP EMBARCAÇÕES") usado
-tanto no canto superior esquerdo do login (`src/app/(auth)/layout.tsx`)
-quanto da sidebar (`src/components/layout/sidebar.tsx`) — um componente só,
-pra trocar pela `<Image>` de verdade em um lugar único quando o arquivo
-chegar (`TODO` no topo do arquivo). Ícones do PWA em `public/icons/` também
-são placeholder (letra "J", já na paleta navy+dourado nova). Tentativa mais
-recente de receber o arquivo: propus ao cliente subir o PNG no Google Drive
-dele (tools `mcp__Google_Drive__*` conectadas e testadas nesta sessão,
-busca funcionando) já que colar no chat não gera anexo de verdade — ainda
-não recebido; conferir Drive/pedir de novo antes de seguir com o TODO.
+**Logo real recebida e aplicada**: colar a imagem inline no chat nunca gerou
+um anexo de verdade (três tentativas, confirmado); o caminho que funcionou
+foi o cliente subir os PNG/WEBP no Google Drive dele e eu buscar/baixar via
+`mcp__Google_Drive__search_files`+`download_file_content`. Dois arquivos
+recebidos: um com fundo navy e o texto "JUMP COTAS NÁUTICAS" (nome
+descartado, não usar), outro com fundo transparente e o texto "JUMP
+EMBARCAÇÕES" (nome oficial). Da segunda arte extraí só o brasão (coroa
+dourada, sem o texto) e salvei em `public/brand/jump-crown.png` — fundo
+transparente, testado sobre navy e sobre claro sem halo/fringe branco.
+`src/components/brand/brand-mark.tsx` usa esse PNG via `next/image` (altura
+fixa `h-8`, largura automática) ao lado do texto "JUMP"/"EMBARCAÇÕES" que
+continua sendo tipografia do próprio app (não faz parte do PNG) — assim
+herda a cor de cada tema automaticamente e não fica preso ao texto "COTAS
+NÁUTICAS" da outra variante. Usado no canto superior esquerdo tanto do
+login (`src/app/(auth)/layout.tsx`) quanto da sidebar
+(`src/components/layout/sidebar.tsx`), um componente só. Ícones do PWA em
+`public/icons/{icon-192,icon-512}.png` foram regenerados com a coroa real
+centralizada sobre fundo navy (script Python ad-hoc com Pillow, não
+versionado — se precisar regenerar em outro tamanho, repetir o recorte a
+partir de `public/brand/jump-crown.png`).
 
 **Personalização visual — decisão fechada**: perguntado explicitamente se
 "robusto em personalização" significava querer uma tela de configurações
