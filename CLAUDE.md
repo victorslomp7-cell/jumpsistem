@@ -145,6 +145,16 @@ placeholder em `src/app/(auth)/login/page.tsx` e
   uma cor por tipo — jet ski dourado, lancha carvão — igual ao gráfico de
   tendência de bateria; ver `maintenanceProgressionByVehicleType` em
   `aggregate.ts`).
+- Comparativo por modelo: `src/lib/reports/compare-models.ts` (puro,
+  testado) agrupa veículos por `model` (não por tipo — inclui arquivados,
+  já que o objetivo é sinalizar modelo problemático mesmo que já removido)
+  e calcula qtd. de veículos, horas médias (última leitura de cada
+  veículo), custo total/por veículo/por hora, % de leituras de bateria
+  <12V, e intervalo médio de dias entre revisões (só conta veículo com
+  ≥2 revisões). Tela em `/reports/comparativo` (admin-only) com gráfico de
+  barras + tabela. Exportação em `.xlsx` via `/api/reports/comparativo/export`
+  (ExcelJS, gerado sob demanda no servidor — 3 abas: snapshot comparativo,
+  pivot mensal por modelo, pivot anual por modelo).
 - PWA/offline (Fase 7): `public/sw.js` (service worker manual, registrado
   por `src/components/pwa/service-worker-registration.tsx` no layout raiz) —
   cache-first pra assets estáticos, stale-while-revalidate pra navegação,

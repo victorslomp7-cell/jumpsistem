@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth/current-profile";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { MaintenanceChartCard } from "@/components/charts/maintenance-chart-card";
 import {
   maintenanceProgressionByVehicleType,
@@ -43,9 +44,14 @@ export default async function ReportsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Relatórios</h1>
-        <p className="text-sm text-muted-foreground">Custo de manutenção de toda a frota, desde o início.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Relatórios</h1>
+          <p className="text-sm text-muted-foreground">Custo de manutenção de toda a frota, desde o início.</p>
+        </div>
+        <Link href="/reports/comparativo" className={buttonVariants({ variant: "outline" })}>
+          Comparativo por modelo
+        </Link>
       </div>
 
       <MaintenanceChartCard monthly={monthlyByType} progression={progressionByType} />
