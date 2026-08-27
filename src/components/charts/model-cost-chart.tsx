@@ -5,7 +5,7 @@ import type { ModelComparisonRow } from "@/lib/reports/compare-models";
 
 const COLOR_BY_TYPE = {
   jet_ski: "var(--color-jump-gold)",
-  lancha: "var(--color-jump-charcoal)",
+  lancha: "var(--color-jump-navy)",
   outro: "var(--muted-foreground)",
 } as const;
 

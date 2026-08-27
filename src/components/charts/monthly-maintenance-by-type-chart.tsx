@@ -32,7 +32,7 @@ export function MonthlyMaintenanceByTypeChart({ data }: { data: MonthlyMaintenan
           />
           <Legend />
           <Bar dataKey="jet_ski" name="Jet ski" stackId="tipo" fill="var(--color-jump-gold)" radius={[0, 0, 0, 0]} />
-          <Bar dataKey="lancha" name="Lancha" stackId="tipo" fill="var(--color-jump-charcoal)" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="lancha" name="Lancha" stackId="tipo" fill="var(--color-jump-navy)" radius={[0, 0, 0, 0]} />
           <Bar dataKey="outro" name="Outro" stackId="tipo" fill="var(--muted-foreground)" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>

@@ -39,21 +39,33 @@ migrations), não gerado por `supabase gen types`.
 Dois temas via atributo `data-theme` em `src/app/globals.css` (Tailwind v4,
 tokens CSS, sem `tailwind.config.ts`):
 - `jump-dark` (default do grupo de rotas `(auth)`) — identidade institucional
-  da Jump, fundo carvão + dourado.
+  da Jump, gradiente de azul-marinho (`from-jump-navy-dark via-jump-navy
+  to-jump-navy-darker`) + dourado como destaque.
 - tema claro (default global) — dashboard de gestão, estilo Drivvo, dourado
-  como cor de destaque.
+  como cor de destaque sobre fundo claro.
 
-Paleta extraída visualmente da imagem colada pelo usuário no chat (coroa
-dourada sobre fundo carvão, "JUMP EMBARCAÇÕES") — pode ser refinada na
-Fase 8 se surgir um manual de marca com códigos de cor diferentes.
+Paleta de azul-marinho + dourado confirmada pelo cliente como as "cores
+base" oficiais da marca (a logo mostra a coroa dourada sobre fundo
+azul-marinho) — tons exatos em `--color-jump-navy-*`/`--color-jump-gold-*`
+no `@theme inline` de `globals.css`, extraídos visualmente (ainda sem
+arquivo de marca com códigos de cor precisos).
 
-**Atenção**: o arquivo `JUMP_LOGO.pdf` enviado pelo usuário continha uma
-logo *diferente* ("JUMP COTAS NÁUTICAS", crachá azul) — descartado a pedido
-do usuário. O arquivo real da logo dourada ainda não foi recebido; até lá,
-login e sidebar usam um wordmark textual (`JUMP` + `EMBARCAÇÕES`) como
-placeholder em `src/app/(auth)/login/page.tsx` e
-`src/components/layout/sidebar.tsx` (marcados com `TODO`). Ícones do PWA em
-`public/icons/` também são placeholder (letra "J").
+**Nome oficial confirmado**: "JUMP EMBARCAÇÕES" (não "JUMP COTAS NÁUTICAS"
+— essa outra variante de logo/nome foi mostrada mas descartada pelo
+cliente).
+
+**Atenção — ainda sem arquivo de logo de verdade**: o cliente já colou duas
+versões da logo no chat (coroa dourada sobre fundo branco, e a mesma coroa
+sobre fundo azul-marinho com o nome "JUMP COTAS NÁUTICAS") mas nenhuma
+chegou como *anexo* (só coladas inline) — esta sessão não consegue salvar
+imagem colada em arquivo, só recebe de verdade quando vem como anexo (igual
+o PDF antigo). Até o arquivo real chegar, `src/components/brand/brand-mark.tsx`
+é um wordmark textual (selo "J" navy+dourado + "JUMP EMBARCAÇÕES") usado
+tanto no canto superior esquerdo do login (`src/app/(auth)/layout.tsx`)
+quanto da sidebar (`src/components/layout/sidebar.tsx`) — um componente só,
+pra trocar pela `<Image>` de verdade em um lugar único quando o arquivo
+chegar (`TODO` no topo do arquivo). Ícones do PWA em `public/icons/` também
+são placeholder (letra "J", já na paleta navy+dourado nova).
 
 ## Estrutura
 

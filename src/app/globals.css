@@ -2,36 +2,39 @@
 
 /*
  * Design system Jump — dois temas:
- * - "jump-dark": identidade institucional (login, splash) — fundo
- *   carvão quase preto + dourado, fiel ao site/logo da Jump.
- * - "drivvo-light": tema do dashboard de gestão (claro), inspirado no
- *   Drivvo, usando o dourado da marca como cor de destaque sobre fundo claro.
+ * - "jump-dark": identidade institucional (login) — gradiente de azul-marinho
+ *   + dourado, fiel à logo oficial (coroa dourada sobre fundo azul-marinho —
+ *   "cores base" da marca, conforme confirmado pelo cliente).
+ * - tema claro (dashboard de gestão) — inspirado no Drivvo, dourado como
+ *   cor de destaque sobre fundo claro, com toques de azul-marinho na marca
+ *   (ex.: selo da logo na sidebar) pra amarrar com o tema escuro.
  *
- * A paleta abaixo foi extraída da logo oficial (public/brand/jump-logo.png).
- * Será refinada/ajustada na Fase 8 (polish visual) se o manual de marca
- * trouxer códigos de cor diferentes.
+ * Paleta de azul extraída visualmente da logo com fundo oficial enviada
+ * pelo cliente — poderá ser ajustada com precisão de pixel assim que o
+ * arquivo (PNG/SVG) chegar como anexo real (hoje só temos a versão colada
+ * no chat, sem arquivo salvo em disco).
  */
 
 :root {
   color-scheme: light;
 
   --background: #f6f7f9;
-  --foreground: #1c1a1b;
+  --foreground: #14202c;
 
   --card: #ffffff;
-  --card-foreground: #1c1a1b;
+  --card-foreground: #14202c;
 
   --muted: #eef0f3;
-  --muted-foreground: #6b7280;
+  --muted-foreground: #64748b;
 
   --border: #e2e5ea;
   --input: #e2e5ea;
   --ring: #d9a441;
 
   --primary: #c9922e;
-  --primary-foreground: #1c1a1b;
+  --primary-foreground: #0a2540;
 
-  --secondary: #1c1a1b;
+  --secondary: #123a5c;
   --secondary-foreground: #ffffff;
 
   --accent: #fdf3e0;
@@ -44,35 +47,35 @@
   --success-foreground: #ffffff;
 
   --warning: #dd9a1f;
-  --warning-foreground: #1c1a1b;
+  --warning-foreground: #14202c;
 
   --radius: 0.75rem;
 }
 
-/* Tema institucional escuro (login / splash) */
+/* Tema institucional escuro (login) — azul-marinho em gradiente + dourado */
 [data-theme="jump-dark"] {
   color-scheme: dark;
 
-  --background: #1c1a1b;
+  --background: #0a2540;
   --foreground: #f5f2ec;
 
-  --card: #262223;
+  --card: #10314f;
   --card-foreground: #f5f2ec;
 
-  --muted: #322d2e;
-  --muted-foreground: #b8afa8;
+  --muted: #1a3d5c;
+  --muted-foreground: #a9c2d6;
 
-  --border: #3a3435;
-  --input: #3a3435;
+  --border: #24486a;
+  --input: #24486a;
   --ring: #d9a441;
 
   --primary: #d9a441;
-  --primary-foreground: #1c1a1b;
+  --primary-foreground: #0a2540;
 
   --secondary: #f5f2ec;
-  --secondary-foreground: #1c1a1b;
+  --secondary-foreground: #0a2540;
 
-  --accent: #3a2f18;
+  --accent: #1e3450;
   --accent-foreground: #f2d681;
 
   --destructive: #e2574c;
@@ -82,7 +85,7 @@
   --success-foreground: #10241a;
 
   --warning: #f2d681;
-  --warning-foreground: #1c1a1b;
+  --warning-foreground: #0a2540;
 }
 
 @theme inline {
@@ -117,11 +120,18 @@
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
 
-  /* Escala do dourado Jump, extraída da logo, para uso pontual
-     (gradientes, ícones, destaques) fora dos tokens semânticos acima. */
+  /* Escala do dourado Jump (coroa da logo), pra uso pontual (gradientes,
+     ícones, destaques) fora dos tokens semânticos acima. */
   --color-jump-gold-light: #f2d681;
   --color-jump-gold: #d9a441;
   --color-jump-gold-dark: #a97c1f;
+
+  /* Escala de azul-marinho da logo — a cor "base" da marca. */
+  --color-jump-navy-light: #1c4a70;
+  --color-jump-navy: #123a5c;
+  --color-jump-navy-dark: #0a2540;
+  --color-jump-navy-darker: #071a2e;
+
   --color-jump-charcoal: #1c1a1b;
 
   --radius-lg: var(--radius);

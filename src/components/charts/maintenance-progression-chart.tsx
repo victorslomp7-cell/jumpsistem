@@ -41,7 +41,7 @@ export function MaintenanceProgressionChart({ data }: { data: MaintenanceProgres
             type="stepAfter"
             dataKey="lancha"
             name="Lancha"
-            stroke="var(--color-jump-charcoal)"
+            stroke="var(--color-jump-navy)"
             strokeWidth={2}
             dot={{ r: 2 }}
           />
