@@ -105,9 +105,14 @@
   --warning: #f2d681;
   --warning-foreground: #0a2540;
 
-  /* "Lancha" muda pra um azul-claro/prateado nesse tema — o navy da marca
-     some sobre o fundo também navy (ver comentário no :root). */
-  --chart-lancha: #8fb4d6;
+  /* "Lancha" muda de tom nesse tema — o navy da marca some sobre o fundo
+     também navy (ver comentário no :root). A primeira tentativa (#8fb4d6)
+     ainda ficava perdida: muito parecida com --muted-foreground (#a9c2d6),
+     então "Lancha" se confundia com texto secundário/grade do gráfico em
+     vez de se destacar como uma série própria. Um azul mais vívido e
+     saturado resolve — nitidamente diferente do dourado, do cinza-azulado
+     neutro e do fundo. */
+  --chart-lancha: #45a3ff;
 
   /* Tons claros pra continuar legível sobre o navy (o mesmo motivo do
      --chart-lancha acima). */

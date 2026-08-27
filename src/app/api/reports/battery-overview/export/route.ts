@@ -1,42 +1,26 @@
 import ExcelJS from "exceljs";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { buildBatteryOverview, lastNDateKeys } from "@/lib/battery/overview";
+import { allDateKeysBetween, buildBatteryOverview, lastNDateKeys, toDateKeyInTimezone } from "@/lib/battery/overview";
+import { addTitleBanner, freezeAndFilter, styleDataRows, styleHeaderRow } from "@/lib/reports/excel-style";
 import { VEHICLE_TYPE_LABELS, type Vehicle } from "@/types/domain";
 
-const HEADER_FILL: ExcelJS.Fill = {
-  type: "pattern",
-  pattern: "solid",
-  fgColor: { argb: "FF1C1A1B" },
-};
-const HEADER_FONT: Partial<ExcelJS.Font> = { color: { argb: "FFD9A441" }, bold: true };
+type ReadingRow = { vehicle_id: string; voltage: number; read_at: string };
 
-// Mesmo destaque visual da tela /battery (bg-warning/25 + texto warning),
-// só que em cores sólidas — .xlsx não tem opacidade de camada.
-const LOW_FILL: ExcelJS.Fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF9E4B0" } };
-const LOW_FONT: Partial<ExcelJS.Font> = { color: { argb: "FF8A5F16" }, bold: true };
-
-const ALLOWED_DAYS = [30, 60, 90] as const;
-const DEFAULT_DAYS = 30;
-
-function parseDays(raw: string | null): number {
-  const n = Number(raw);
-  return (ALLOWED_DAYS as readonly number[]).includes(n) ? n : DEFAULT_DAYS;
-}
-
-function styleHeaderRow(row: ExcelJS.Row) {
-  row.eachCell((cell) => {
-    cell.fill = HEADER_FILL;
-    cell.font = HEADER_FONT;
-  });
-}
+const ALLOWED_WINDOW_DAYS = [30, 60, 90] as const;
+const DEFAULT_WINDOW_DAYS = 30;
 
 /**
- * Exportação em .xlsx da bateria dos últimos 30/60/90 dias, de todos os
- * veículos (jet ski e lancha — diferente da tela /battery, que só mostra
- * jet ski). Mesmo formato de matriz (veículo x dia) da planilha que a
+ * Exportação em .xlsx da bateria de todos os veículos (jet ski e lancha —
+ * diferente da tela /battery, que só mostra jet ski), inclusive
+ * arquivados. Mesmo formato de matriz (veículo x dia) da planilha que a
  * empresa já usa hoje. Não é admin-only: mesma visibilidade da tela de
  * bateria, que o funcionário também usa em campo.
+ *
+ * `?days=30|60|90` — janela corrida a partir de hoje.
+ * `?days=all` — histórico completo, desde a leitura mais antiga registrada
+ * (pode passar de 600 dias/colunas — o cliente pediu explicitamente esse
+ * alcance; .xlsx aguenta de boa, diferente de uma tabela na tela).
  */
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -45,7 +29,8 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
 
-  const days = parseDays(new URL(request.url).searchParams.get("days"));
+  const rawDays = new URL(request.url).searchParams.get("days");
+  const isFullHistory = rawDays === "all";
 
   // Inclui veículos arquivados também: uma leitura baixa antes de o
   // veículo sair da frota continua sendo um dado real do período.
@@ -53,10 +38,7 @@ export async function GET(request: Request) {
   const vehicleList = (vehicles as Vehicle[] | null) ?? [];
   const vehicleIds = vehicleList.map((v) => v.id);
 
-  const dateKeys = lastNDateKeys(days);
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - (days + 1));
-  const cutoff = cutoffDate.toISOString();
+  const { dateKeys, cutoff, sheetLabel } = await resolveRange(supabase, isFullHistory, rawDays, vehicleIds);
 
   const { data: readings } =
     vehicleIds.length > 0
@@ -65,11 +47,11 @@ export async function GET(request: Request) {
           .select("vehicle_id, voltage, read_at")
           .in("vehicle_id", vehicleIds)
           .gte("read_at", cutoff)
-      : { data: [] as { vehicle_id: string; voltage: number; read_at: string }[] };
+      : { data: [] as ReadingRow[] };
 
   const rowsByVehicle = buildBatteryOverview(
     vehicleList.map((v) => ({ id: v.id, nickname: v.nickname })),
-    (readings as { vehicle_id: string; voltage: number; read_at: string }[] | null) ?? [],
+    (readings as ReadingRow[] | null) ?? [],
     dateKeys
   );
   const rowById = new Map(rowsByVehicle.map((r) => [r.vehicleId, r]));
@@ -78,14 +60,26 @@ export async function GET(request: Request) {
   workbook.creator = "Jump Frota";
   workbook.created = new Date();
 
-  const sheet = workbook.addWorksheet(`Bateria — últimos ${days} dias`);
+  const columnCount = 2 + dateKeys.length;
+  // Nome da aba não pode ter "/" nem passar de 31 caracteres (limite do
+  // Excel) — o texto descritivo completo (com data "15/01" etc.) fica só
+  // no banner de título dentro da planilha, não no nome da aba.
+  const sheet = workbook.addWorksheet("Bateria");
   sheet.columns = [
-    { header: "Veículo", key: "nickname", width: 18 },
-    { header: "Tipo", key: "type", width: 12 },
-    ...dateKeys.map((date) => ({ header: formatHeaderDate(date), key: date, width: 10 })),
+    { key: "nickname", width: 18 },
+    { key: "type", width: 12 },
+    ...dateKeys.map((date) => ({ key: date, width: 10 })),
   ];
-  styleHeaderRow(sheet.getRow(1));
-  sheet.views = [{ state: "frozen", xSplit: 2, ySplit: 1 }];
+  const generatedAt = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+  const headerRow = addTitleBanner(
+    sheet,
+    "Jump Frota — Bateria por dia",
+    `${sheetLabel} · todos os veículos, jet ski e lancha · gerado em ${generatedAt}`,
+    columnCount
+  );
+  sheet.getRow(headerRow).values = ["Veículo", "Tipo", ...dateKeys.map(formatHeaderDate)];
+  styleHeaderRow(sheet.getRow(headerRow));
+  freezeAndFilter(sheet, headerRow, columnCount, 2);
 
   // Ordenado por tipo (jet ski primeiro) e depois apelido, igual a query.
   for (const vehicle of vehicleList) {
@@ -104,13 +98,16 @@ export async function GET(request: Request) {
     for (const cell of row.cells) {
       if (!cell.low) continue;
       const excelCell = addedRow.getCell(cell.date);
-      excelCell.fill = LOW_FILL;
-      excelCell.font = LOW_FONT;
+      excelCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF9E4B0" } };
+      excelCell.font = { color: { argb: "FF8A5F16" }, bold: true };
     }
   }
 
+  styleDataRows(sheet, headerRow + 1);
+
   const buffer = await workbook.xlsx.writeBuffer();
-  const fileName = `jump-frota-bateria-${days}dias-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const fileSuffix = isFullHistory ? "historico-completo" : `${dateKeys.length}dias`;
+  const fileName = `jump-frota-bateria-${fileSuffix}-${new Date().toISOString().slice(0, 10)}.xlsx`;
 
   return new NextResponse(buffer as unknown as BodyInit, {
     headers: {
@@ -118,6 +115,43 @@ export async function GET(request: Request) {
       "Content-Disposition": `attachment; filename="${fileName}"`,
     },
   });
+}
+
+async function resolveRange(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  isFullHistory: boolean,
+  rawDays: string | null,
+  vehicleIds: string[]
+): Promise<{ dateKeys: string[]; cutoff: string; sheetLabel: string }> {
+  if (isFullHistory) {
+    if (vehicleIds.length === 0) {
+      return { dateKeys: [], cutoff: new Date(0).toISOString(), sheetLabel: "histórico completo" };
+    }
+    const { data: earliest } = await supabase
+      .from("battery_readings")
+      .select("read_at")
+      .in("vehicle_id", vehicleIds)
+      .order("read_at", { ascending: true })
+      .limit(1);
+    const earliestReadAt = earliest?.[0]?.read_at as string | undefined;
+    if (!earliestReadAt) {
+      return { dateKeys: [], cutoff: new Date().toISOString(), sheetLabel: "histórico completo" };
+    }
+    const startKey = toDateKeyInTimezone(earliestReadAt);
+    const endKey = toDateKeyInTimezone(new Date().toISOString());
+    return {
+      dateKeys: allDateKeysBetween(startKey, endKey),
+      cutoff: earliestReadAt,
+      sheetLabel: `histórico completo (desde ${formatHeaderDate(startKey)})`,
+    };
+  }
+
+  const n = Number(rawDays);
+  const days = (ALLOWED_WINDOW_DAYS as readonly number[]).includes(n) ? n : DEFAULT_WINDOW_DAYS;
+  const dateKeys = lastNDateKeys(days);
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - (days + 1));
+  return { dateKeys, cutoff: cutoffDate.toISOString(), sheetLabel: `últimos ${days} dias` };
 }
 
 function formatHeaderDate(dateKey: string): string {

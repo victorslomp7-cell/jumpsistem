@@ -167,6 +167,28 @@ pedido explícito novo.
   explicitamente "cada veículo" pro relatório, não só jet ski. Mesmo
   destaque de bateria baixa, em preenchimento sólido (fill color), já que
   `.xlsx` não tem opacidade de camada.
+
+  **Histórico permanente e navegação por período** (pedido explícito do
+  cliente: "preciso que todas as informações dos jetskis fiquem salvas pra
+  sempre"): `battery_readings` **já** não tem nenhuma rotina de limpeza —
+  nunca houve TTL/retenção/cron de expurgo, as leituras ficam guardadas
+  pra sempre desde a Fase 2, então esse ponto não exigiu mudança de schema,
+  só deixar a navegação nesse histórico usável (uma tabela de 600+ colunas
+  na tela seria inviável). Por isso a tela `/battery` tem dois modos,
+  alternados pelo pill "Por mês" ao lado do seletor de dias:
+  - `?days=N` (padrão) — janela corrida, checagem rápida do dia a dia;
+  - `?month=YYYY-MM` — mês civil fechado, com navegação anterior/próximo
+    (`shiftMonthKey`), no mesmo espírito da planilha antiga da empresa
+    ("agosto", "setembro", ...) — não deixa ir além do mês corrente.
+  `daysInMonth`/`shiftMonthKey` (também em `src/lib/battery/overview.ts`,
+  testados) calculam os dias de cada mês civil, parando no dia de hoje
+  quando o mês pedido é o corrente. Pra ver **literalmente tudo** de uma
+  vez (o caso dos "600 dias" que o cliente descreveu) o caminho é o botão
+  "Histórico completo" no export em Excel (`?days=all` na rota de export),
+  que busca a leitura mais antiga registrada e gera uma coluna por dia
+  desde ela até hoje — testado manualmente com 600 colunas sintéticas
+  (script ad-hoc, não versionado) pra confirmar que ExcelJS aguenta
+  mergeCells/autoFilter/freeze panes nesse tamanho sem erro.
 - Alertas: `src/app/(dashboard)/alerts/` lê a tabela `alerts` (populada pelo
   trigger de bateria hoje; revisão entra na Fase 3) e permite
   reconhecer/resolver.
@@ -213,9 +235,18 @@ pedido explícito novo.
   Central de Alertas. O card "Manutenção por tipo de veículo" em `/reports`
   tem um seletor (`MaintenanceChartCard`, Client Component): "Por mês"
   (padrão, colunas empilhadas) ou "Progressão" (linha contínua acumulada,
-  uma cor por tipo — jet ski dourado, lancha carvão — igual ao gráfico de
-  tendência de bateria; ver `maintenanceProgressionByVehicleType` em
-  `aggregate.ts`).
+  uma cor por tipo — jet ski dourado, lancha num azul próprio — igual ao
+  gráfico de tendência de bateria; ver `maintenanceProgressionByVehicleType`
+  em `aggregate.ts`). Cor de "lancha" nesses gráficos é o token
+  `--color-chart-lancha` (não o navy da marca direto), porque o navy da
+  marca some sobre o fundo do dashboard, que também é navy desde que o
+  tema escuro passou a valer no sistema inteiro — ver comentário completo
+  em `globals.css`. Esse token já levou um ajuste: a primeira tentativa
+  (`#8fb4d6`) tecnicamente contrastava com o fundo, mas era parecida demais
+  com `--muted-foreground` (texto secundário/grade do gráfico) e o cliente
+  reportou que "a lancha... acaba sumindo" mesmo assim — valor atual
+  (`#45a3ff`) é bem mais saturado/distinto, não só "contrastante o
+  suficiente no papel".
 - Comparativo por modelo: `src/lib/reports/compare-models.ts` (puro,
   testado) agrupa veículos por `model` (não por tipo — inclui arquivados,
   já que o objetivo é sinalizar modelo problemático mesmo que já removido)
@@ -226,6 +257,20 @@ pedido explícito novo.
   barras + tabela. Exportação em `.xlsx` via `/api/reports/comparativo/export`
   (ExcelJS, gerado sob demanda no servidor — 3 abas: snapshot comparativo,
   pivot mensal por modelo, pivot anual por modelo).
+
+  **Estilo do Excel**: `src/lib/reports/excel-style.ts` centraliza o visual
+  de qualquer planilha gerada pelo sistema (usado por este export e pelo
+  de bateria) — banner de título mesclado no topo de cada aba (navy +
+  dourado da marca, com subtítulo explicando o filtro/data de geração),
+  cabeçalho de tabela estilizado, linhas zebradas, bordas finas, formato
+  de número por coluna (moeda `R$ #,##0.00`, percentual `0%`), congelamento
+  de painel + autofiltro na linha de cabeçalho. Existe pra toda planilha
+  sair com a mesma identidade em vez de cada rota inventar o próprio
+  visual (pedido do cliente: "deixar mais bonito e harmônico"). Tem
+  `columnLetter(n)` (testado) pra endereçar colunas além de "Z" — o
+  comparativo tem poucas colunas, mas o export de bateria pode passar de
+  600 (histórico completo), e `String.fromCharCode` sozinho não cobre
+  colunas de duas letras.
 - PWA/offline (Fase 7): `public/sw.js` (service worker manual, registrado
   por `src/components/pwa/service-worker-registration.tsx` no layout raiz) —
   cache-first pra assets estáticos, stale-while-revalidate pra navegação,

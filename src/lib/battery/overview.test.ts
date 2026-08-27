@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { buildBatteryOverview, lastNDateKeys, toDateKeyInTimezone } from "./overview";
+import {
+  allDateKeysBetween,
+  buildBatteryOverview,
+  daysInMonth,
+  lastNDateKeys,
+  shiftMonthKey,
+  toDateKeyInTimezone,
+} from "./overview";
 
 describe("toDateKeyInTimezone", () => {
   it("converte um instante UTC pro dia civil em São Paulo (UTC-3)", () => {
@@ -21,6 +28,61 @@ describe("lastNDateKeys", () => {
   it("respeita pelo menos os últimos 3 dias quando pedido", () => {
     const now = new Date("2026-08-27T18:00:00Z");
     expect(lastNDateKeys(3, now)).toEqual(["2026-08-25", "2026-08-26", "2026-08-27"]);
+  });
+});
+
+describe("allDateKeysBetween", () => {
+  it("retorna todos os dias entre duas datas, inclusive", () => {
+    expect(allDateKeysBetween("2026-08-28", "2026-09-02")).toEqual([
+      "2026-08-28",
+      "2026-08-29",
+      "2026-08-30",
+      "2026-08-31",
+      "2026-09-01",
+      "2026-09-02",
+    ]);
+  });
+
+  it("retorna um único dia quando início e fim são iguais", () => {
+    expect(allDateKeysBetween("2026-08-24", "2026-08-24")).toEqual(["2026-08-24"]);
+  });
+});
+
+describe("daysInMonth", () => {
+  it("retorna todos os dias de um mês passado (fechado)", () => {
+    const now = new Date("2026-08-27T18:00:00Z");
+    const keys = daysInMonth("2026-07", now);
+    expect(keys[0]).toBe("2026-07-01");
+    expect(keys[keys.length - 1]).toBe("2026-07-31");
+    expect(keys).toHaveLength(31);
+  });
+
+  it("pára no dia de hoje quando o mês pedido é o mês corrente", () => {
+    const now = new Date("2026-08-27T18:00:00Z"); // 27/08 em São Paulo
+    const keys = daysInMonth("2026-08", now);
+    expect(keys[keys.length - 1]).toBe("2026-08-27");
+    expect(keys).toHaveLength(27);
+  });
+
+  it("respeita fevereiro em ano bissexto", () => {
+    const now = new Date("2028-03-01T12:00:00Z");
+    const keys = daysInMonth("2028-02", now);
+    expect(keys).toHaveLength(29);
+  });
+});
+
+describe("shiftMonthKey", () => {
+  it("vai pro mês anterior", () => {
+    expect(shiftMonthKey("2026-08", -1)).toBe("2026-07");
+  });
+
+  it("vai pro próximo mês", () => {
+    expect(shiftMonthKey("2026-08", 1)).toBe("2026-09");
+  });
+
+  it("cruza a virada de ano nos dois sentidos", () => {
+    expect(shiftMonthKey("2026-01", -1)).toBe("2025-12");
+    expect(shiftMonthKey("2026-12", 1)).toBe("2027-01");
   });
 });
 

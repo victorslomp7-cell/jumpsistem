@@ -29,6 +29,47 @@ export function lastNDateKeys(n: number, now: Date = new Date(), timeZone: strin
   return keys;
 }
 
+/** Todos os dias civis entre `startKey` e `endKey` (inclusive), crescente. */
+export function allDateKeysBetween(startKey: string, endKey: string): string[] {
+  const start = new Date(`${startKey}T00:00:00Z`).getTime();
+  const end = new Date(`${endKey}T00:00:00Z`).getTime();
+  const keys: string[] = [];
+  for (let t = start; t <= end; t += 24 * 60 * 60 * 1000) {
+    keys.push(new Date(t).toISOString().slice(0, 10));
+  }
+  return keys;
+}
+
+/**
+ * Todos os dias de um mês civil ("YYYY-MM"), crescente — pra navegar o
+ * histórico mês a mês, no mesmo espírito da planilha antiga da empresa
+ * ("agosto", "setembro", ...). Se `monthKey` for o mês atual, para no dia
+ * de hoje (não mostra dias futuros vazios do mês corrente).
+ */
+export function daysInMonth(monthKey: string, now: Date = new Date(), timeZone: string = FLEET_TIMEZONE): string[] {
+  const [yearStr, monthStr] = monthKey.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr); // 1-12
+  const lastDayOfMonth = new Date(year, month, 0).getDate();
+
+  const todayKey = toDateKeyInTimezone(now.toISOString(), timeZone);
+  const isCurrentMonth = monthKey === todayKey.slice(0, 7);
+  const maxDay = isCurrentMonth ? Number(todayKey.slice(8, 10)) : lastDayOfMonth;
+
+  const keys: string[] = [];
+  for (let d = 1; d <= maxDay; d++) {
+    keys.push(`${yearStr}-${monthStr}-${String(d).padStart(2, "0")}`);
+  }
+  return keys;
+}
+
+/** "YYYY-MM" deslocado `delta` meses (negativo = mês anterior). */
+export function shiftMonthKey(monthKey: string, delta: number): string {
+  const [yearStr, monthStr] = monthKey.split("-");
+  const date = new Date(Number(yearStr), Number(monthStr) - 1 + delta, 1);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export interface BatteryOverviewCell {
   date: string; // "YYYY-MM-DD"
   voltage: number | null; // null = sem leitura nesse dia
