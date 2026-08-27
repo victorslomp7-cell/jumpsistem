@@ -89,9 +89,14 @@ placeholder em `src/app/(auth)/login/page.tsx` e
   (`evaluate_vehicle_revision`, 0004) — triggers reavaliam em tempo real ao
   lançar horas, registrar revisão, ou o admin editar o intervalo/aviso do
   veículo; o cron diário (Parte 2 de 0004, pg_cron) é só rede de segurança.
-- `maintenance_events` já existe desde a Fase 3 (schema completo pensando
-  na Fase 5), mas só é usado por enquanto para `is_revision = true` — a
-  tela de histórico completo (com anexos/orçamento/garantia) é da Fase 5.
+- Manutenção: `src/app/(dashboard)/maintenance/` (lista global timeline +
+  novo) e `src/app/(dashboard)/vehicles/[id]/maintenance/` (aba do veículo)
+  usam a mesma `maintenance_events` da Fase 3 — o formulário geral cobre
+  todos os tipos (revisão/troca de peça/troca de bateria/outro), custo,
+  orçamento, garantia e anexo; `type = 'revisao'` aciona a mesma reavaliação
+  de contagem de horas da Fase 3 (o trigger no banco não distingue de onde
+  veio o INSERT). Timeline colorida por tipo em
+  `src/components/maintenance/event-type-badge.tsx`.
 - Abastecimento: `src/app/(dashboard)/refuels/` (lista global + novo) e
   `src/app/(dashboard)/vehicles/[id]/refuels/` (aba do veículo), compartilhando
   `RefuelForm`/`RefuelList`. Anexo de NF via `src/lib/storage/attachments.ts`
