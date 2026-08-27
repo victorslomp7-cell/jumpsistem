@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { LoginForm } from "./login-form";
 
 export default function LoginPage() {
   return (
@@ -22,33 +22,7 @@ export default function LoginPage() {
           Gestão de manutenção, bateria e custos da frota.
         </p>
 
-        {/*
-          Fase 1 conecta este formulário ao Supabase Auth (@supabase/ssr).
-          Por ora é um placeholder visual para validar o tema institucional.
-        */}
-        <form className="flex flex-col gap-4">
-          <label className="flex flex-col gap-1.5 text-sm">
-            E-mail
-            <input
-              type="email"
-              disabled
-              placeholder="voce@jump.com.br"
-              className="h-10 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground disabled:opacity-60"
-            />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm">
-            Senha
-            <input
-              type="password"
-              disabled
-              placeholder="••••••••"
-              className="h-10 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground disabled:opacity-60"
-            />
-          </label>
-          <Button type="submit" disabled className="mt-2 w-full">
-            Entrar
-          </Button>
-        </form>
+        <LoginForm />
       </div>
 
       <p className="text-xs text-muted-foreground">

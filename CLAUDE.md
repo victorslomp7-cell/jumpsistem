@@ -16,8 +16,20 @@ Next.js 16 (App Router, TypeScript) + Supabase (Postgres/Auth/Storage/Realtime)
 **Importante — Next.js 16 tem breaking changes** vs. o que você conhece de
 treino: leia `node_modules/next/dist/docs/` antes de assumir convenções.
 Já confirmado nesta sessão: `middleware.ts` foi renomeado para `proxy.ts`
-(export `proxy`, não `middleware`) — use isso ao implementar o refresh de
-sessão do Supabase na Fase 1.
+(export `proxy`, não `middleware`) — usado em `src/proxy.ts` para refresh de
+sessão do Supabase (ver `src/lib/supabase/middleware.ts`).
+
+**Importante — rede bloqueada para Supabase nesta sessão remota**: o egress
+proxy do ambiente barra `*.supabase.co` (403 de política, não é bug — não
+tentar contornar). Isso significa: 1) não dá pra rodar
+`supabase db push`/`gen types`/testar curl direto daqui — migrations são
+aplicadas colando o SQL no SQL Editor do painel do Supabase; 2) chamadas do
+`@supabase/supabase-js` (via Node fetch) falham rápido e de forma
+"graciosa" (`getUser()` retorna `user: null`, não lança exceção), então
+`npm run dev` funciona para navegar sem sessão, mas login de verdade só
+pode ser testado via Vercel (preview URL) ou na máquina do usuário. Por
+isso `src/types/database.types.ts` é escrito à mão (espelhando as
+migrations), não gerado por `supabase gen types`.
 
 ## Temas
 
@@ -52,8 +64,20 @@ placeholder em `src/app/(auth)/login/page.tsx` e
   documentada hoje — pesquisado e confirmado).
 - `src/lib/hours/revision.ts` — regras puras de cálculo de revisão por horas
   (testável sem I/O).
+- `src/lib/auth/current-profile.ts` — `getCurrentProfile()`/`requireAdmin()`,
+  usado por Server Components e Server Actions para checar role. RLS no
+  banco é a garantia real; isso é só UX (esconder/redirecionar).
+- `src/proxy.ts` + `src/lib/supabase/middleware.ts` — refresh de sessão e
+  redirect (`/login` ↔ `/dashboard`) conforme autenticação.
+- Veículos: CRUD completo em `src/app/(dashboard)/vehicles/` (list, new,
+  `[id]`, `[id]/edit`, Server Actions em `actions.ts`), restrito a admin
+  para criar/editar/excluir (funcionário só lê). Sub-abas
+  `[id]/{battery,hours,refuels,maintenance}` são placeholders `<ComingSoon />`
+  até suas respectivas fases.
 - `supabase/migrations/` — uma migration por fase (`0001_init.sql` = perfis
-  + veículos). `supabase/seed.sql` — dados de demonstração.
+  + veículos; `0002_profile_provisioning.sql` = trigger que auto-cria perfil
+  `funcionario` em `auth.users` novo). `supabase/seed.sql` — dados de
+  demonstração (ainda não aplicado pelo usuário).
 
 ## Convenções
 
