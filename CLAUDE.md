@@ -65,7 +65,18 @@ tanto no canto superior esquerdo do login (`src/app/(auth)/layout.tsx`)
 quanto da sidebar (`src/components/layout/sidebar.tsx`) — um componente só,
 pra trocar pela `<Image>` de verdade em um lugar único quando o arquivo
 chegar (`TODO` no topo do arquivo). Ícones do PWA em `public/icons/` também
-são placeholder (letra "J", já na paleta navy+dourado nova).
+são placeholder (letra "J", já na paleta navy+dourado nova). Tentativa mais
+recente de receber o arquivo: propus ao cliente subir o PNG no Google Drive
+dele (tools `mcp__Google_Drive__*` conectadas e testadas nesta sessão,
+busca funcionando) já que colar no chat não gera anexo de verdade — ainda
+não recebido; conferir Drive/pedir de novo antes de seguir com o TODO.
+
+**Personalização visual — decisão fechada**: perguntado explicitamente se
+"robusto em personalização" significava querer uma tela de configurações
+para o admin trocar cor/logo sozinho no futuro — cliente respondeu que
+**não**, o trabalho já feito (paleta e logo aplicados por mim, fixos no
+código) é suficiente. Não construir tela de settings de marca/tema sem
+pedido explícito novo.
 
 ## Estrutura
 
