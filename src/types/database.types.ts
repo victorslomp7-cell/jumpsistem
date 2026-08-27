@@ -230,6 +230,93 @@ export interface Database {
         };
         Relationships: [];
       };
+      refuels: {
+        Row: {
+          id: string;
+          vehicle_id: string;
+          refuel_date: string;
+          engine_hours: number | null;
+          fuel_type: string;
+          liters: number;
+          price_per_liter: number | null;
+          total_value: number;
+          gas_station: string | null;
+          full_tank: boolean;
+          payment_method: "dinheiro" | "cartao" | "pix" | "boleto" | "outro" | null;
+          driver_name: string | null;
+          created_by: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          vehicle_id: string;
+          refuel_date?: string;
+          engine_hours?: number | null;
+          fuel_type?: string;
+          liters: number;
+          price_per_liter?: number | null;
+          total_value: number;
+          gas_station?: string | null;
+          full_tank?: boolean;
+          payment_method?: "dinheiro" | "cartao" | "pix" | "boleto" | "outro" | null;
+          driver_name?: string | null;
+          created_by?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          vehicle_id?: string;
+          refuel_date?: string;
+          engine_hours?: number | null;
+          fuel_type?: string;
+          liters?: number;
+          price_per_liter?: number | null;
+          total_value?: number;
+          gas_station?: string | null;
+          full_tank?: boolean;
+          payment_method?: "dinheiro" | "cartao" | "pix" | "boleto" | "outro" | null;
+          driver_name?: string | null;
+          created_by?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      attachments: {
+        Row: {
+          id: string;
+          owner_type: "refuel" | "maintenance_event" | "vehicle";
+          owner_id: string;
+          storage_path: string;
+          file_name: string;
+          mime_type: string | null;
+          uploaded_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_type: "refuel" | "maintenance_event" | "vehicle";
+          owner_id: string;
+          storage_path: string;
+          file_name: string;
+          mime_type?: string | null;
+          uploaded_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          owner_type?: "refuel" | "maintenance_event" | "vehicle";
+          owner_id?: string;
+          storage_path?: string;
+          file_name?: string;
+          mime_type?: string | null;
+          uploaded_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -242,6 +329,8 @@ export interface Database {
       alert_severity: "info" | "warning" | "critical";
       alert_status: "open" | "acknowledged" | "resolved";
       maintenance_event_type: "revisao" | "troca_peca" | "troca_bateria" | "outro";
+      payment_method: "dinheiro" | "cartao" | "pix" | "boleto" | "outro";
+      attachment_owner_type: "refuel" | "maintenance_event" | "vehicle";
     };
     CompositeTypes: Record<string, never>;
   };

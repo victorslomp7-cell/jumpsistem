@@ -92,13 +92,20 @@ placeholder em `src/app/(auth)/login/page.tsx` e
 - `maintenance_events` já existe desde a Fase 3 (schema completo pensando
   na Fase 5), mas só é usado por enquanto para `is_revision = true` — a
   tela de histórico completo (com anexos/orçamento/garantia) é da Fase 5.
+- Abastecimento: `src/app/(dashboard)/refuels/` (lista global + novo) e
+  `src/app/(dashboard)/vehicles/[id]/refuels/` (aba do veículo), compartilhando
+  `RefuelForm`/`RefuelList`. Anexo de NF via `src/lib/storage/attachments.ts`
+  (bucket privado `attachments` + tabela genérica `attachments`, reaproveitada
+  pela Fase 5) — visualização por link assinado em
+  `src/app/api/attachments/[id]/route.ts`.
 - `supabase/migrations/` — uma migration por fase (`0001_init.sql` = perfis
   + veículos; `0002_profile_provisioning.sql` = trigger que auto-cria perfil
   `funcionario` em `auth.users` novo; `0003_battery.sql` = leituras de
   bateria, alertas, e o trigger de bloqueio <12V; `0004_hours_revision.sql`
   = horas de motor, `maintenance_events`, e a lógica de alerta de revisão —
   tem uma Parte 2 opcional/pg_cron que deve ser colada e rodada
-  separadamente, ver comentário no topo do arquivo).
+  separadamente, ver comentário no topo do arquivo; `0005_refuels.sql` =
+  abastecimento, tabela genérica `attachments`, e o bucket de Storage).
   `supabase/seed.sql` — dados de demonstração (ainda não aplicado pelo
   usuário).
 - Testes: `npm run test` (Vitest) cobre as regras puras críticas
