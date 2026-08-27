@@ -1,24 +1,33 @@
 "use client";
 
-import { useActionState, useRef, useEffect } from "react";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { BATTERY_MIN_VOLTAGE } from "@/lib/battery/ingestion";
-import { addBatteryReading, type BatteryActionState } from "@/app/(dashboard)/vehicles/[id]/battery/actions";
+import { useOfflineSubmit } from "@/hooks/use-offline-submit";
+import { useRouter } from "next/navigation";
 
 export function BatteryReadingForm({ vehicleId }: { vehicleId: string }) {
-  const action = addBatteryReading.bind(null, vehicleId) as (
-    state: BatteryActionState | undefined,
-    formData: FormData
-  ) => Promise<BatteryActionState>;
-  const [state, formAction, isPending] = useActionState(action, undefined);
+  const { state, isPending, submit } = useOfflineSubmit("battery", "/api/battery-readings");
   const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    if (state?.success) formRef.current?.reset();
-  }, [state]);
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const voltage = Number(formData.get("voltage"));
+    if (!voltage) return;
+
+    await submit({
+      vehicleId,
+      voltage,
+      notes: String(formData.get("notes") ?? "").trim() || undefined,
+    });
+    formRef.current?.reset();
+    router.refresh();
+  }
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5 text-sm">
         Voltagem lida (V)
         <input
@@ -39,11 +48,13 @@ export function BatteryReadingForm({ vehicleId }: { vehicleId: string }) {
         />
       </label>
 
-      {state?.error && (
+      {state.error && (
         <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{state.error}</p>
       )}
-      {state?.success && (
-        <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">Leitura registrada.</p>
+      {state.success && (
+        <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">
+          {state.queued ? "Sem conexão — leitura salva localmente, será enviada quando a internet voltar." : "Leitura registrada."}
+        </p>
       )}
 
       <p className="text-xs text-muted-foreground">

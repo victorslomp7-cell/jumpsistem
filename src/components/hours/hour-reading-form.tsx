@@ -1,23 +1,32 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { addHourReading, type HoursActionState } from "@/app/(dashboard)/vehicles/[id]/hours/actions";
+import { useOfflineSubmit } from "@/hooks/use-offline-submit";
 
 export function HourReadingForm({ vehicleId }: { vehicleId: string }) {
-  const action = addHourReading.bind(null, vehicleId) as (
-    state: HoursActionState | undefined,
-    formData: FormData
-  ) => Promise<HoursActionState>;
-  const [state, formAction, isPending] = useActionState(action, undefined);
+  const { state, isPending, submit } = useOfflineSubmit("hours", "/api/engine-hour-readings");
   const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    if (state?.success) formRef.current?.reset();
-  }, [state]);
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const hours = Number(formData.get("hours"));
+    if (!hours && hours !== 0) return;
+
+    await submit({
+      vehicleId,
+      hours,
+      notes: String(formData.get("notes") ?? "").trim() || undefined,
+    });
+    formRef.current?.reset();
+    router.refresh();
+  }
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5 text-sm">
         Horas totais do motor
         <input
@@ -39,11 +48,13 @@ export function HourReadingForm({ vehicleId }: { vehicleId: string }) {
         />
       </label>
 
-      {state?.error && (
+      {state.error && (
         <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{state.error}</p>
       )}
-      {state?.success && (
-        <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">Leitura registrada.</p>
+      {state.success && (
+        <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">
+          {state.queued ? "Sem conexão — leitura salva localmente, será enviada quando a internet voltar." : "Leitura registrada."}
+        </p>
       )}
 
       <p className="text-xs text-muted-foreground">

@@ -17,36 +17,6 @@ function revalidateVehicle(vehicleId: string) {
   revalidatePath("/dashboard");
 }
 
-export async function addHourReading(
-  vehicleId: string,
-  _prevState: HoursActionState | undefined,
-  formData: FormData
-): Promise<HoursActionState> {
-  const current = await getCurrentProfile();
-  if (!current) return { error: "Sessão expirada — faça login novamente." };
-
-  const hoursRaw = formData.get("hours");
-  const hours = Number(hoursRaw);
-  if (!hoursRaw || Number.isNaN(hours) || hours < 0) {
-    return { error: "Informe um número de horas válido." };
-  }
-
-  const notes = String(formData.get("notes") ?? "").trim() || undefined;
-
-  const supabase = await createClient();
-  const { error } = await supabase.from("engine_hour_readings").insert({
-    vehicle_id: vehicleId,
-    hours,
-    recorded_by: current.userId,
-    notes,
-  });
-
-  if (error) return { error: error.message };
-
-  revalidateVehicle(vehicleId);
-  return { success: true };
-}
-
 export async function completeRevision(
   vehicleId: string,
   _prevState: HoursActionState | undefined,

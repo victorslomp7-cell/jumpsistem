@@ -48,6 +48,25 @@ dispositivo real, não em emulação de desktop).
    perfil correspondente rodando o `insert` comentado no topo de
    `supabase/seed.sql`.
 
+## Notificações push (Fase 7)
+
+1. Gere as chaves VAPID uma vez: `npx web-push generate-vapid-keys`.
+2. Preencha no `.env.local`/Vercel: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`,
+   `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (um `mailto:` seu) e
+   `PUSH_WEBHOOK_SECRET` (qualquer string aleatória, ex.:
+   `openssl rand -hex 24`).
+3. Pegue a `service_role` key em *Project Settings → API* do Supabase e
+   preencha `SUPABASE_SERVICE_ROLE_KEY` — só é usada no servidor
+   (`/api/push/notify`), nunca exposta ao navegador.
+4. No painel do Supabase: **Database → Webhooks → Create a new hook**.
+   - Table: `alerts` · Events: `Insert`
+   - Type: HTTP Request · Method: `POST`
+   - URL: `https://<seu-domínio-vercel>/api/push/notify`
+   - Headers: adicione `x-webhook-secret` com o mesmo valor de
+     `PUSH_WEBHOOK_SECRET`.
+5. Cada usuário ativa notificações pelo sino no topo do dashboard (pede
+   permissão do navegador uma vez).
+
 ## Roadmap
 
 O projeto é construído em fases incrementais — veja `CLAUDE.md` para a
@@ -56,11 +75,11 @@ o planejamento inicial) para o desenho de dados e regras de negócio de cada
 fase:
 
 0. Setup do projeto — ✅
-1. Autenticação + cadastro de veículos
-2. Controle de bateria (bloqueio automático <12V)
-3. Horas de motor e alertas de revisão
-4. Abastecimento
-5. Manutenção e histórico
-6. Dashboards e relatórios
-7. PWA offline-first + notificações push
+1. Autenticação + cadastro de veículos — ✅
+2. Controle de bateria (bloqueio automático <12V) — ✅
+3. Horas de motor e alertas de revisão — ✅
+4. Abastecimento — ✅
+5. Manutenção e histórico — ✅
+6. Dashboards e relatórios — ✅
+7. PWA offline-first + notificações push — ✅
 8. Polish visual e QA

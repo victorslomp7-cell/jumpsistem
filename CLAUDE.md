@@ -10,8 +10,11 @@ produto já validadas com o cliente (não reabrir sem pedir de novo).
 ## Stack
 
 Next.js 16 (App Router, TypeScript) + Supabase (Postgres/Auth/Storage/Realtime)
-+ Vercel + Tailwind CSS v4 + shadcn/ui-style components + Serwist (PWA, Fase 7)
-+ Dexie/IndexedDB (offline outbox, Fase 7) + Recharts (Fase 6) + Vitest/Playwright.
++ Vercel + Tailwind CSS v4 + shadcn/ui-style components + service worker
+escrito à mão (PWA, Fase 7 — não Serwist: a versão estável ainda depende do
+@serwist/webpack-plugin e o Next 16 já usa Turbopack até no build de
+produção, sem garantia de compatibilidade) + Dexie/IndexedDB (offline
+outbox, Fase 7) + web-push (Fase 7) + Recharts (Fase 6) + Vitest/Playwright.
 
 **Importante — Next.js 16 tem breaking changes** vs. o que você conhece de
 treino: leia `node_modules/next/dist/docs/` antes de assumir convenções.
@@ -120,7 +123,35 @@ placeholder em `src/app/(auth)/login/page.tsx` e
   agregado, conforme decisão de RLS do projeto); o card de custo do
   `/dashboard` também só aparece pra admin. Alertas (`VehicleAlertBadges`)
   aparecem direto no veículo (lista, ficha, tabela do dashboard), não só na
-  Central de Alertas.
+  Central de Alertas. O card "Manutenção por tipo de veículo" em `/reports`
+  tem um seletor (`MaintenanceChartCard`, Client Component): "Por mês"
+  (padrão, colunas empilhadas) ou "Progressão" (linha contínua acumulada,
+  uma cor por tipo — jet ski dourado, lancha carvão — igual ao gráfico de
+  tendência de bateria; ver `maintenanceProgressionByVehicleType` em
+  `aggregate.ts`).
+- PWA/offline (Fase 7): `public/sw.js` (service worker manual, registrado
+  por `src/components/pwa/service-worker-registration.tsx` no layout raiz) —
+  cache-first pra assets estáticos, stale-while-revalidate pra navegação,
+  push/notificationclick pro Web Push. **Importante**: `src/proxy.ts` exclui
+  `sw.js` e `api/` do matcher — sem isso, o navegador registraria o HTML do
+  redirect pro `/login` como se fosse o service worker (bug real encontrado
+  e corrigido nesta fase), e o webhook do Supabase em `/api/push/notify`
+  seria redirecionado antes de rodar (ele chega sem cookie de sessão).
+  Fila offline: `src/lib/offline/{db.ts,sync-manager.ts}` (Dexie) — os 3
+  formulários de campo (bateria, horas, abastecimento sem anexo) usam
+  `src/hooks/use-offline-submit.ts`, que tenta o POST direto e cai pra fila
+  local se estiver offline ou a rede falhar no meio do caminho; `Route
+  Handlers` em `src/app/api/{battery-readings,engine-hour-readings,refuels}`
+  são o único caminho de escrita pra esses três (usado tanto no envio
+  direto quanto pela fila). `SyncStatusBadge` na TopBar mostra
+  offline/pendências. Abastecimento **com** anexo continua exigindo conexão
+  (a Server Action de `refuels/actions.ts` lida com o upload do arquivo).
+  Web Push: migration `0006_push_subscriptions.sql` + `src/lib/push/`
+  (assinatura no browser) + `/api/push/subscribe` (salva) + `/api/push/notify`
+  (rota comum do Next, **não** Edge Function — mais simples de configurar:
+  só um Database Webhook do Supabase na tabela `alerts`, evento INSERT,
+  apontando pra essa rota com o header `x-webhook-secret`) +
+  `src/lib/supabase/admin.ts` (service role, só usado ali, nunca no client).
 - Testes: `npm run test` (Vitest) cobre as regras puras críticas
   (`src/lib/battery/ingestion.test.ts`, `src/lib/hours/revision.test.ts`,
   `src/lib/reports/aggregate.test.ts`) — também rodado no CI.

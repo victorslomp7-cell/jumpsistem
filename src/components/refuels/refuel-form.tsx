@@ -1,26 +1,48 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { PAYMENT_METHOD_LABELS } from "@/types/domain";
 import type { Vehicle } from "@/types/domain";
-import { createRefuel } from "@/app/(dashboard)/refuels/actions";
+import { createRefuel, type RefuelActionState } from "@/app/(dashboard)/refuels/actions";
+import { enqueue } from "@/lib/offline/sync-manager";
 
 const inputClass =
   "h-10 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground";
 
+function buildOfflinePayload(formData: FormData) {
+  const num = (key: string) => {
+    const v = formData.get(key);
+    if (!v) return undefined;
+    const n = Number(v);
+    return Number.isNaN(n) ? undefined : n;
+  };
+  return {
+    vehicleId: String(formData.get("vehicle_id") ?? ""),
+    refuelDate: String(formData.get("refuel_date") ?? ""),
+    engineHours: num("engine_hours"),
+    fuelType: String(formData.get("fuel_type") ?? ""),
+    liters: num("liters"),
+    pricePerLiter: num("price_per_liter"),
+    totalValue: num("total_value"),
+    gasStation: String(formData.get("gas_station") ?? ""),
+    fullTank: formData.get("full_tank") === "on",
+    paymentMethod: String(formData.get("payment_method") ?? "") || undefined,
+    driverName: String(formData.get("driver_name") ?? ""),
+    notes: String(formData.get("notes") ?? ""),
+  };
+}
+
 export function RefuelForm({ vehicleId, vehicles }: { vehicleId?: string; vehicles?: Vehicle[] }) {
-  const [state, formAction, isPending] = useActionState(createRefuel, undefined);
+  const [state, setState] = useState<RefuelActionState & { queued?: boolean }>({});
+  const [isPending, setIsPending] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const litersRef = useRef<HTMLInputElement>(null);
   const priceRef = useRef<HTMLInputElement>(null);
   const totalRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    if (state?.success) formRef.current?.reset();
-  }, [state]);
-
-  // Preenchimento automático do valor total (o usuário ainda pode sobrescrever depois).
   const recalcTotal = () => {
     const liters = Number(litersRef.current?.value);
     const price = Number(priceRef.current?.value);
@@ -29,8 +51,50 @@ export function RefuelForm({ vehicleId, vehicles }: { vehicleId?: string; vehicl
     }
   };
 
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const file = formData.get("attachment");
+    const hasFile = file instanceof File && file.size > 0;
+
+    setIsPending(true);
+    setState({});
+
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      if (hasFile) {
+        setState({ error: "Sem conexão — anexos não podem ser enviados offline. Remova o anexo ou tente de novo com internet." });
+        setIsPending(false);
+        return;
+      }
+      await enqueue("refuel", "/api/refuels", buildOfflinePayload(formData));
+      setState({ success: true, queued: true });
+      formRef.current?.reset();
+      setIsPending(false);
+      return;
+    }
+
+    try {
+      const result = await createRefuel(undefined, formData);
+      setState(result);
+      if (result.success) {
+        formRef.current?.reset();
+        router.refresh();
+      }
+    } catch {
+      if (hasFile) {
+        setState({ error: "Falha de conexão ao enviar o anexo — tente novamente." });
+      } else {
+        await enqueue("refuel", "/api/refuels", buildOfflinePayload(formData));
+        setState({ success: true, queued: true });
+        formRef.current?.reset();
+      }
+    } finally {
+      setIsPending(false);
+    }
+  }
+
   return (
-    <form ref={formRef} action={formAction} className="flex max-w-xl flex-col gap-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="flex max-w-xl flex-col gap-4">
       {vehicles ? (
         <label className="flex flex-col gap-1.5 text-sm">
           Veículo
@@ -137,7 +201,7 @@ export function RefuelForm({ vehicleId, vehicles }: { vehicleId?: string; vehicl
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm">
-        Anexar nota fiscal (opcional)
+        Anexar nota fiscal (opcional — exige conexão)
         <input name="attachment" type="file" accept="image/*,.pdf" className="text-sm" />
       </label>
 
@@ -146,11 +210,15 @@ export function RefuelForm({ vehicleId, vehicles }: { vehicleId?: string; vehicl
         <input name="notes" className={inputClass} />
       </label>
 
-      {state?.error && (
+      {state.error && (
         <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{state.error}</p>
       )}
-      {state?.success && (
-        <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">Abastecimento registrado.</p>
+      {state.success && (
+        <p className="rounded-md bg-success/10 px-3 py-2 text-sm text-success">
+          {state.queued
+            ? "Sem conexão — abastecimento salvo localmente, será enviado quando a internet voltar."
+            : "Abastecimento registrado."}
+        </p>
       )}
 
       <Button type="submit" disabled={isPending} className="w-fit">

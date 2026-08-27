@@ -10,9 +10,14 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Roda em toda rota exceto assets estáticos, imagens e o manifest/ícones
-     * do PWA, para não bloquear carregamento de CSS/JS/ícones.
+     * Roda em toda rota exceto assets estáticos, imagens, o
+     * manifest/ícones/service worker do PWA (sw.js precisa ser servido
+     * puro, senão o navegador registra o HTML do redirect pro /login como
+     * se fosse o service worker) e as rotas /api/* — cada Route Handler já
+     * faz sua própria checagem de auth e devolve JSON (401, não redirect);
+     * isso é essencial pro webhook do Supabase em /api/push/notify, que
+     * chega sem cookie de sessão nenhum e não pode ser redirecionado.
      */
-    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icons/|brand/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|icons/|brand/|api/).*)",
   ],
 };

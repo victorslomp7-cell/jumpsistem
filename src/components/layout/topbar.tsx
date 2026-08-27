@@ -1,6 +1,8 @@
 import { signOut } from "@/app/(dashboard)/actions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { SyncStatusBadge } from "@/components/offline/sync-status-badge";
+import { NotificationBell } from "@/components/push/notification-bell";
 import type { Profile } from "@/types/domain";
 
 export function TopBar({ email, profile }: { email: string | null; profile: Profile | null }) {
@@ -14,11 +16,15 @@ export function TopBar({ email, profile }: { email: string | null; profile: Prof
           </Badge>
         )}
       </div>
-      <form action={signOut}>
-        <Button type="submit" variant="ghost" size="sm">
-          Sair
-        </Button>
-      </form>
+      <div className="flex items-center gap-2">
+        <SyncStatusBadge />
+        <NotificationBell />
+        <form action={signOut}>
+          <Button type="submit" variant="ghost" size="sm">
+            Sair
+          </Button>
+        </form>
+      </div>
     </header>
   );
 }
