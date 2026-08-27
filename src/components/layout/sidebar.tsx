@@ -4,6 +4,7 @@ import { BrandMark } from "@/components/brand/brand-mark";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Geral" },
   { href: "/vehicles", label: "Veículos" },
+  { href: "/battery", label: "Baterias" },
   { href: "/maintenance", label: "Manutenção" },
   { href: "/alerts", label: "Alertas" },
   { href: "/reports", label: "Relatórios" },
