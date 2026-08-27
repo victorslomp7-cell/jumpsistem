@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  maintenanceProgressionByVehicleType,
   monthlyCosts,
   monthlyMaintenanceByVehicleType,
   totalCostByCategory,
@@ -46,6 +47,40 @@ describe("monthlyMaintenanceByVehicleType", () => {
       vehicleTypeById
     );
     expect(result).toEqual([{ month: "2026-03", jet_ski: 100, lancha: 200, outro: 0 }]);
+  });
+});
+
+describe("maintenanceProgressionByVehicleType", () => {
+  it("acumula o custo por tipo, um degrau por data de evento", () => {
+    const vehicleTypeById = new Map<string, "jet_ski" | "lancha" | "outro">([
+      ["v1", "jet_ski"],
+      ["v2", "lancha"],
+    ]);
+    const result = maintenanceProgressionByVehicleType(
+      [
+        { event_date: "2026-01-10", cost: 100, vehicle_id: "v1" },
+        { event_date: "2026-01-20", cost: 200, vehicle_id: "v2" },
+        { event_date: "2026-02-05", cost: 50, vehicle_id: "v1" },
+      ],
+      vehicleTypeById
+    );
+    expect(result).toEqual([
+      { date: "2026-01-10", jet_ski: 100, lancha: 0, outro: 0 },
+      { date: "2026-01-20", jet_ski: 100, lancha: 200, outro: 0 },
+      { date: "2026-02-05", jet_ski: 150, lancha: 200, outro: 0 },
+    ]);
+  });
+
+  it("mantém só um ponto por data, com o acumulado mais recente daquele dia", () => {
+    const vehicleTypeById = new Map<string, "jet_ski" | "lancha" | "outro">([["v1", "jet_ski"]]);
+    const result = maintenanceProgressionByVehicleType(
+      [
+        { event_date: "2026-01-10", cost: 100, vehicle_id: "v1" },
+        { event_date: "2026-01-10", cost: 50, vehicle_id: "v1" },
+      ],
+      vehicleTypeById
+    );
+    expect(result).toEqual([{ date: "2026-01-10", jet_ski: 150, lancha: 0, outro: 0 }]);
   });
 });
 

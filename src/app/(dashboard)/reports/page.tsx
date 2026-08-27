@@ -4,8 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth/current-profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DonutCostChart } from "@/components/charts/donut-cost-chart";
-import { MonthlyMaintenanceByTypeChart } from "@/components/charts/monthly-maintenance-by-type-chart";
+import { MaintenanceChartCard } from "@/components/charts/maintenance-chart-card";
 import {
+  maintenanceProgressionByVehicleType,
   monthlyMaintenanceByVehicleType,
   totalCostByCategory,
   vehicleCostSummaries,
@@ -32,6 +33,7 @@ export default async function ReportsPage() {
   const vehicleTypeById = new Map(vehicleList.map((v) => [v.id, v.type]));
   const costs = totalCostByCategory(refuelList, eventList);
   const monthlyByType = monthlyMaintenanceByVehicleType(eventList, vehicleTypeById);
+  const progressionByType = maintenanceProgressionByVehicleType(eventList, vehicleTypeById);
   const summaries = vehicleCostSummaries(
     vehicleList.map((v) => v.id),
     refuelList,
@@ -58,14 +60,7 @@ export default async function ReportsPage() {
             <DonutCostChart costs={costs} />
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Manutenção por mês, por tipo de veículo</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <MonthlyMaintenanceByTypeChart data={monthlyByType} />
-          </CardContent>
-        </Card>
+        <MaintenanceChartCard monthly={monthlyByType} progression={progressionByType} />
       </div>
 
       <Card className="overflow-x-auto p-0">

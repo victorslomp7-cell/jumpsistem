@@ -70,6 +70,37 @@ export function monthlyMaintenanceByVehicleType(
   return [...map.values()].sort((a, b) => a.month.localeCompare(b.month));
 }
 
+export interface MaintenanceProgressionPoint {
+  date: string; // "YYYY-MM-DD" — data do evento que mudou o acumulado
+  jet_ski: number;
+  lancha: number;
+  outro: number;
+}
+
+/**
+ * Custo de manutenção acumulado ao longo do tempo, por tipo de veículo —
+ * visão alternativa "progressão" (igual à tendência de bateria: uma linha
+ * contínua por série, jet ski e lancha em cores diferentes) ao gráfico
+ * padrão por mês. Cada ponto é um "degrau" (o acumulado sobe no dia de cada
+ * evento; entre eventos o valor considerado é o do último ponto).
+ */
+export function maintenanceProgressionByVehicleType(
+  events: { event_date: string; cost: number | null; vehicle_id: string }[],
+  vehicleTypeById: Map<string, VehicleType>
+): MaintenanceProgressionPoint[] {
+  const sorted = [...events].sort((a, b) => a.event_date.localeCompare(b.event_date));
+  const running = { jet_ski: 0, lancha: 0, outro: 0 };
+  const byDate = new Map<string, MaintenanceProgressionPoint>();
+
+  for (const e of sorted) {
+    const type = vehicleTypeById.get(e.vehicle_id) ?? "outro";
+    running[type] += e.cost ?? 0;
+    byDate.set(e.event_date, { date: e.event_date, ...running });
+  }
+
+  return [...byDate.values()];
+}
+
 export interface VehicleCostSummary {
   vehicleId: string;
   totalRefuels: number;
