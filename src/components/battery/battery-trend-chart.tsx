@@ -23,10 +23,16 @@ export function BatteryTrendChart({ readings }: { readings: BatteryReading[] }) 
   return (
     <div className="h-64">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 10, right: 16, bottom: 0, left: -16 }}>
+        <LineChart data={data} margin={{ top: 10, right: 16, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="var(--muted-foreground)" />
-          <YAxis domain={["dataMin - 1", "dataMax + 1"]} tick={{ fontSize: 12 }} stroke="var(--muted-foreground)" />
+          <YAxis
+            domain={["dataMin - 1", "dataMax + 1"]}
+            tick={{ fontSize: 12 }}
+            stroke="var(--muted-foreground)"
+            width={44}
+            tickFormatter={(value: number) => value.toFixed(1)}
+          />
           <Tooltip
             formatter={(value) => [`${value}V`, "Bateria"] as [string, string]}
             contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
