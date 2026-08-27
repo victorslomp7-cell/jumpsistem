@@ -86,6 +86,72 @@ export interface Database {
         };
         Relationships: [];
       };
+      battery_readings: {
+        Row: {
+          id: string;
+          vehicle_id: string;
+          voltage: number;
+          read_at: string;
+          source: "manual" | "motorlog_api";
+          recorded_by: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          vehicle_id: string;
+          voltage: number;
+          read_at?: string;
+          source?: "manual" | "motorlog_api";
+          recorded_by?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          vehicle_id?: string;
+          voltage?: number;
+          read_at?: string;
+          source?: "manual" | "motorlog_api";
+          recorded_by?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      alerts: {
+        Row: {
+          id: string;
+          vehicle_id: string | null;
+          type: "battery_low" | "revision_due" | "revision_overdue";
+          severity: "info" | "warning" | "critical";
+          message: string;
+          status: "open" | "acknowledged" | "resolved";
+          created_at: string;
+          resolved_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          vehicle_id?: string | null;
+          type: "battery_low" | "revision_due" | "revision_overdue";
+          severity?: "info" | "warning" | "critical";
+          message: string;
+          status?: "open" | "acknowledged" | "resolved";
+          created_at?: string;
+          resolved_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          vehicle_id?: string | null;
+          type?: "battery_low" | "revision_due" | "revision_overdue";
+          severity?: "info" | "warning" | "critical";
+          message?: string;
+          status?: "open" | "acknowledged" | "resolved";
+          created_at?: string;
+          resolved_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -93,6 +159,10 @@ export interface Database {
       profile_role: "admin" | "funcionario";
       vehicle_type: "jet_ski" | "lancha" | "outro";
       vehicle_status: "disponivel" | "bloqueado" | "manutencao";
+      battery_reading_source: "manual" | "motorlog_api";
+      alert_type: "battery_low" | "revision_due" | "revision_overdue";
+      alert_severity: "info" | "warning" | "critical";
+      alert_status: "open" | "acknowledged" | "resolved";
     };
     CompositeTypes: Record<string, never>;
   };

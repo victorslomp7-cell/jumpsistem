@@ -55,3 +55,43 @@ export const REVISION_DEFAULTS: Record<VehicleType, { intervalHours: number | nu
   lancha: { intervalHours: 100, warningHours: 20 },
   outro: { intervalHours: null, warningHours: null },
 };
+
+export type BatteryReadingSourceType = "manual" | "motorlog_api";
+
+export interface BatteryReading {
+  id: string;
+  vehicle_id: string;
+  voltage: number;
+  read_at: string;
+  source: BatteryReadingSourceType;
+  recorded_by: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export type AlertType = "battery_low" | "revision_due" | "revision_overdue";
+export type AlertSeverity = "info" | "warning" | "critical";
+export type AlertStatus = "open" | "acknowledged" | "resolved";
+
+export interface Alert {
+  id: string;
+  vehicle_id: string | null;
+  type: AlertType;
+  severity: AlertSeverity;
+  message: string;
+  status: AlertStatus;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+export const ALERT_TYPE_LABELS: Record<AlertType, string> = {
+  battery_low: "Bateria baixa",
+  revision_due: "Revisão próxima",
+  revision_overdue: "Revisão vencida",
+};
+
+export const ALERT_STATUS_LABELS: Record<AlertStatus, string> = {
+  open: "Aberto",
+  acknowledged: "Reconhecido",
+  resolved: "Resolvido",
+};

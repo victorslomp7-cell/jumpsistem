@@ -74,10 +74,22 @@ placeholder em `src/app/(auth)/login/page.tsx` e
   para criar/editar/excluir (funcionário só lê). Sub-abas
   `[id]/{battery,hours,refuels,maintenance}` são placeholders `<ComingSoon />`
   até suas respectivas fases.
+- Bateria: `src/lib/battery/ingestion.ts` (`ManualBatteryReadingAdapter` grava
+  via Supabase; `MotorlogApiAdapter` stub) + tela em
+  `src/app/(dashboard)/vehicles/[id]/battery/` (gráfico de tendência Recharts
+  + formulário). A regra de bloqueio <12V é o trigger `handle_battery_reading`
+  no banco (0003) — o app só reflete o resultado, não decide.
+- Alertas: `src/app/(dashboard)/alerts/` lê a tabela `alerts` (populada pelo
+  trigger de bateria hoje; revisão entra na Fase 3) e permite
+  reconhecer/resolver.
 - `supabase/migrations/` — uma migration por fase (`0001_init.sql` = perfis
   + veículos; `0002_profile_provisioning.sql` = trigger que auto-cria perfil
-  `funcionario` em `auth.users` novo). `supabase/seed.sql` — dados de
-  demonstração (ainda não aplicado pelo usuário).
+  `funcionario` em `auth.users` novo; `0003_battery.sql` = leituras de
+  bateria, alertas, e o trigger de bloqueio <12V). `supabase/seed.sql` —
+  dados de demonstração (ainda não aplicado pelo usuário).
+- Testes: `npm run test` (Vitest) cobre as regras puras críticas
+  (`src/lib/battery/ingestion.test.ts`, `src/lib/hours/revision.test.ts`) —
+  também rodado no CI.
 
 ## Convenções
 
