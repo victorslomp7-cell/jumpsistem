@@ -18,6 +18,11 @@ import type { Vehicle } from "@/types/domain";
 const DAY_OPTIONS = [3, 7, 14, 30] as const;
 const DEFAULT_DAYS = 7;
 
+// Janela do export em .xlsx é separada do seletor da tabela acima (o
+// cliente pediu especificamente 30/60/90 dias pro relatório) e cobre todos
+// os veículos, não só jet ski — ver src/app/api/reports/battery-overview/export.
+const EXPORT_DAY_OPTIONS = [30, 60, 90] as const;
+
 function parseDays(raw: string | undefined): number {
   const n = Number(raw);
   return (DAY_OPTIONS as readonly number[]).includes(n) ? n : DEFAULT_DAYS;
@@ -94,6 +99,26 @@ export default async function BatteryOverviewPage({
 
       <Card className="overflow-hidden p-0">
         <BatteryOverviewTable rows={rows} dateKeys={dateKeys} vehicleHrefById={vehicleHrefById} />
+      </Card>
+
+      <Card className="flex flex-wrap items-center justify-between gap-4 p-4">
+        <div>
+          <p className="text-sm font-medium">Exportar relatório em Excel</p>
+          <p className="text-sm text-muted-foreground">
+            Todos os veículos (jet ski e lancha), uma leitura por dia no período.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {EXPORT_DAY_OPTIONS.map((n) => (
+            <a
+              key={n}
+              href={`/api/reports/battery-overview/export?days=${n}`}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              {n} dias
+            </a>
+          ))}
+        </div>
       </Card>
     </div>
   );

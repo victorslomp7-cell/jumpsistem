@@ -157,7 +157,16 @@ pedido explícito novo.
   UTC) pra não jogar leitura de fim de dia pro dia seguinte. Célula fica
   destacada (`bg-warning/25`) quando a leitura do dia é <12V, reaproveitando
   `isBatteryLow`. Não é admin-only — mesma visibilidade das outras telas de
-  bateria que o funcionário já usa em campo.
+  bateria que o funcionário já usa em campo. Botão "Exportar relatório em
+  Excel" na mesma tela gera `.xlsx` sob demanda em
+  `src/app/api/reports/battery-overview/export/` (30/60/90 dias, `?days=`
+  — janela separada do seletor 3/7/14/30 da tabela, pedido explícito do
+  cliente) — reaproveita `buildBatteryOverview`, mas diferente da tela
+  cobre **todos os veículos** (jet ski e lancha, inclusive arquivados,
+  mesma lógica do comparativo por modelo) porque o cliente pediu
+  explicitamente "cada veículo" pro relatório, não só jet ski. Mesmo
+  destaque de bateria baixa, em preenchimento sólido (fill color), já que
+  `.xlsx` não tem opacidade de camada.
 - Alertas: `src/app/(dashboard)/alerts/` lê a tabela `alerts` (populada pelo
   trigger de bateria hoje; revisão entra na Fase 3) e permite
   reconhecer/resolver.
