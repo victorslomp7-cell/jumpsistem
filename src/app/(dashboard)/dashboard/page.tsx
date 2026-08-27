@@ -2,7 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle, CardValue } from "@/components/ui/card";
 import { VehicleStatusBadge } from "@/components/vehicles/vehicle-status-badge";
-import { VEHICLE_TYPE_LABELS, type Vehicle } from "@/types/domain";
+import { VehicleAlertBadges } from "@/components/vehicles/vehicle-alert-badges";
+import { VEHICLE_TYPE_LABELS, type Alert, type Vehicle } from "@/types/domain";
 
 /*
  * Dashboard geral. Custo total e gráficos mensais chegam na Fase 6
@@ -12,13 +13,22 @@ import { VEHICLE_TYPE_LABELS, type Vehicle } from "@/types/domain";
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const [{ data: vehicles }, { count: openAlerts }] = await Promise.all([
+  const [{ data: vehicles }, { data: openAlerts }] = await Promise.all([
     supabase.from("vehicles").select("*").order("nickname"),
-    supabase.from("alerts").select("*", { count: "exact", head: true }).eq("status", "open"),
+    supabase.from("alerts").select("*").eq("status", "open"),
   ]);
 
   const vehicleList = (vehicles as Vehicle[] | null) ?? [];
   const blockedCount = vehicleList.filter((v) => v.status === "bloqueado").length;
+  const openAlertsList = (openAlerts as Alert[] | null) ?? [];
+
+  const alertsByVehicle = new Map<string, Alert[]>();
+  for (const alert of openAlertsList) {
+    if (!alert.vehicle_id) continue;
+    const list = alertsByVehicle.get(alert.vehicle_id) ?? [];
+    list.push(alert);
+    alertsByVehicle.set(alert.vehicle_id, list);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,7 +54,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <Link href="/alerts" className="hover:underline">
-              <CardValue>{openAlerts ?? 0}</CardValue>
+              <CardValue>{openAlertsList.length}</CardValue>
             </Link>
           </CardContent>
         </Card>
@@ -90,7 +100,10 @@ export default async function DashboardPage() {
                     </td>
                     <td className="px-6 py-2 text-muted-foreground">{VEHICLE_TYPE_LABELS[v.type]}</td>
                     <td className="px-6 py-2">
-                      <VehicleStatusBadge status={v.status} />
+                      <div className="flex flex-wrap gap-1.5">
+                        <VehicleStatusBadge status={v.status} />
+                        <VehicleAlertBadges alerts={alertsByVehicle.get(v.id) ?? []} />
+                      </div>
                     </td>
                   </tr>
                 ))}

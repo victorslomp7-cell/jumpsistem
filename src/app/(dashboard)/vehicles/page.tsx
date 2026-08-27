@@ -4,16 +4,27 @@ import { getCurrentProfile } from "@/lib/auth/current-profile";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { VehicleStatusBadge } from "@/components/vehicles/vehicle-status-badge";
-import { VEHICLE_TYPE_LABELS, type Vehicle } from "@/types/domain";
+import { VehicleAlertBadges } from "@/components/vehicles/vehicle-alert-badges";
+import { VEHICLE_TYPE_LABELS, type Alert, type Vehicle } from "@/types/domain";
 
 export default async function VehiclesPage() {
-  const [current, vehiclesResult] = await Promise.all([
+  const supabase = await createClient();
+  const [current, vehiclesResult, { data: openAlerts }] = await Promise.all([
     getCurrentProfile(),
-    (await createClient()).from("vehicles").select("*").order("nickname"),
+    supabase.from("vehicles").select("*").order("nickname"),
+    supabase.from("alerts").select("*").eq("status", "open"),
   ]);
 
   const isAdmin = current?.profile?.role === "admin";
   const vehicles = (vehiclesResult.data as Vehicle[] | null) ?? [];
+
+  const alertsByVehicle = new Map<string, Alert[]>();
+  for (const alert of (openAlerts as Alert[] | null) ?? []) {
+    if (!alert.vehicle_id) continue;
+    const list = alertsByVehicle.get(alert.vehicle_id) ?? [];
+    list.push(alert);
+    alertsByVehicle.set(alert.vehicle_id, list);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -73,7 +84,10 @@ export default async function VehiclesPage() {
                   <td className="px-4 py-3 text-muted-foreground">{VEHICLE_TYPE_LABELS[vehicle.type]}</td>
                   <td className="px-4 py-3 text-muted-foreground">{vehicle.model ?? "—"}</td>
                   <td className="px-4 py-3">
-                    <VehicleStatusBadge status={vehicle.status} />
+                    <div className="flex flex-wrap gap-1.5">
+                      <VehicleStatusBadge status={vehicle.status} />
+                      <VehicleAlertBadges alerts={alertsByVehicle.get(vehicle.id) ?? []} />
+                    </div>
                   </td>
                 </tr>
               ))}

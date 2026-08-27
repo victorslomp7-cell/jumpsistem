@@ -6,8 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { VehicleTabs } from "@/components/vehicles/vehicle-tabs";
 import { VehicleStatusBadge } from "@/components/vehicles/vehicle-status-badge";
+import { VehicleAlertBadges } from "@/components/vehicles/vehicle-alert-badges";
 import { DeleteVehicleButton } from "@/components/vehicles/delete-vehicle-button";
-import { VEHICLE_TYPE_LABELS, type Vehicle } from "@/types/domain";
+import { VEHICLE_TYPE_LABELS, type Alert, type Vehicle } from "@/types/domain";
 
 export default async function VehicleDetailPage({
   params,
@@ -15,20 +16,26 @@ export default async function VehicleDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [current, { data, error }] = await Promise.all([
+  const supabase = await createClient();
+  const [current, { data, error }, { data: openAlerts }] = await Promise.all([
     getCurrentProfile(),
-    (await createClient()).from("vehicles").select("*").eq("id", id).maybeSingle(),
+    supabase.from("vehicles").select("*").eq("id", id).maybeSingle(),
+    supabase.from("alerts").select("*").eq("vehicle_id", id).eq("status", "open"),
   ]);
 
   if (error || !data) notFound();
   const vehicle = data as Vehicle;
   const isAdmin = current?.profile?.role === "admin";
+  const vehicleAlerts = (openAlerts as Alert[] | null) ?? [];
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{vehicle.nickname}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-semibold">{vehicle.nickname}</h1>
+            <VehicleAlertBadges alerts={vehicleAlerts} />
+          </div>
           <p className="text-sm text-muted-foreground">
             {VEHICLE_TYPE_LABELS[vehicle.type]} {vehicle.model ? `— ${vehicle.model}` : ""}
           </p>
