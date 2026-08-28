@@ -144,7 +144,16 @@ pedido explícito novo.
   via Supabase; `MotorlogApiAdapter` stub) + tela em
   `src/app/(dashboard)/vehicles/[id]/battery/` (gráfico de tendência Recharts
   + formulário). A regra de bloqueio <12V é o trigger `handle_battery_reading`
-  no banco (0003) — o app só reflete o resultado, não decide.
+  no banco (0003) — o app só reflete o resultado, não decide. Campo de
+  voltagem aceita 2 casas decimais (`step="0.01"`, ex. `12.43`) — o banco já
+  usava `numeric(4,2)` desde a Fase 2, só o `step="0.1"` do input limitava.
+  Editar uma leitura já lançada (corrigir erro de digitação) é admin-only
+  (`0010_battery_reading_edit.sql`, mesmo padrão de "só admin edita" do
+  `maintenance_events`) via `EditBatteryReadingDialog` — só expõe
+  voltage/notes (nunca data/hora ou veículo da leitura). Essa migration
+  também liga `handle_battery_reading` a `AFTER UPDATE OF voltage` (o
+  trigger original só rodava em INSERT) — sem isso, corrigir a leitura mais
+  recente de um veículo não reavaliaria o bloqueio/alerta de bateria.
   `src/app/(dashboard)/battery/` (rota `/battery`, link "Baterias" na
   sidebar/nav mobile) é a visão geral pedida pelo cliente pra bater o olho
   em todos os jet skis de uma vez, no mesmo formato de planilha
@@ -222,7 +231,9 @@ pedido explícito novo.
   `attachments`/bucket de Storage, que continuam em uso; `0006_push_subscriptions.sql`;
   `0007_push_webhook_trigger.sql`; `0008_remove_refuels.sql` = dropa
   `refuels` e o enum `payment_method`; `0009_vehicle_soft_delete.sql` =
-  `vehicles.deleted_at`).
+  `vehicles.deleted_at`; `0010_battery_reading_edit.sql` = policy de update
+  admin-only em `battery_readings` + trigger de bloqueio <12V também em
+  UPDATE, pra permitir corrigir uma leitura já lançada).
   `supabase/seed.sql` — dados de demonstração (ainda não aplicado pelo
   usuário).
 - Dashboards/relatórios: `src/lib/reports/aggregate.ts` (agregação pura em

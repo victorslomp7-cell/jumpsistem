@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/auth/current-profile";
 import { VehicleTabs } from "@/components/vehicles/vehicle-tabs";
 import { VehicleStatusBadge } from "@/components/vehicles/vehicle-status-badge";
 import { BatteryTrendChart } from "@/components/battery/battery-trend-chart";
 import { BatteryReadingForm } from "@/components/battery/battery-reading-form";
+import { EditBatteryReadingDialog } from "@/components/battery/edit-battery-reading-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BatteryReading, Vehicle } from "@/types/domain";
 
@@ -15,7 +17,8 @@ export default async function VehicleBatteryPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: vehicle }, { data: readings }] = await Promise.all([
+  const [current, { data: vehicle }, { data: readings }] = await Promise.all([
+    getCurrentProfile(),
     supabase.from("vehicles").select("*").eq("id", id).maybeSingle(),
     supabase
       .from("battery_readings")
@@ -26,6 +29,8 @@ export default async function VehicleBatteryPage({
   ]);
 
   if (!vehicle) notFound();
+
+  const isAdmin = current?.profile?.role === "admin";
 
   const readingList = (readings as BatteryReading[] | null) ?? [];
   const latest = readingList[0];
@@ -60,6 +65,7 @@ export default async function VehicleBatteryPage({
                       <th className="px-6 py-2 font-medium">Data</th>
                       <th className="px-6 py-2 font-medium">Voltagem</th>
                       <th className="px-6 py-2 font-medium">Observação</th>
+                      {isAdmin && <th className="px-6 py-2 font-medium">Ações</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -72,6 +78,16 @@ export default async function VehicleBatteryPage({
                           {r.voltage}V
                         </td>
                         <td className="px-6 py-2 text-muted-foreground">{r.notes ?? "—"}</td>
+                        {isAdmin && (
+                          <td className="px-6 py-2">
+                            <EditBatteryReadingDialog
+                              readingId={r.id}
+                              vehicleId={id}
+                              voltage={r.voltage}
+                              notes={r.notes}
+                            />
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

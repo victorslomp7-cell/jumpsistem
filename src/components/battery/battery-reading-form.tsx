@@ -33,9 +33,9 @@ export function BatteryReadingForm({ vehicleId }: { vehicleId: string }) {
         <input
           name="voltage"
           type="number"
-          step="0.1"
+          step="0.01"
           required
-          placeholder="Ex: 12.6"
+          placeholder="Ex: 12.43"
           className="h-10 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground"
         />
       </label>
