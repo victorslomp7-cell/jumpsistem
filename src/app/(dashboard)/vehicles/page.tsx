@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { VehicleStatusBadge } from "@/components/vehicles/vehicle-status-badge";
 import { VehicleAlertBadges } from "@/components/vehicles/vehicle-alert-badges";
+import { ArchiveVehicleDialog } from "@/components/vehicles/archive-vehicle-dialog";
 import { ReactivateVehicleButton } from "@/components/vehicles/reactivate-vehicle-button";
 import { VEHICLE_TYPE_LABELS, type Alert, type Vehicle } from "@/types/domain";
 
@@ -74,6 +75,7 @@ export default async function VehiclesPage() {
                 <th className="px-4 py-3 font-medium">Tipo</th>
                 <th className="px-4 py-3 font-medium">Modelo</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                {isAdmin && <th className="px-4 py-3 font-medium">Ações</th>}
               </tr>
             </thead>
             <tbody>
@@ -92,6 +94,11 @@ export default async function VehiclesPage() {
                       <VehicleAlertBadges alerts={alertsByVehicle.get(vehicle.id) ?? []} />
                     </div>
                   </td>
+                  {isAdmin && (
+                    <td className="px-4 py-3">
+                      <ArchiveVehicleDialog vehicleId={vehicle.id} nickname={vehicle.nickname} label="Remover" />
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

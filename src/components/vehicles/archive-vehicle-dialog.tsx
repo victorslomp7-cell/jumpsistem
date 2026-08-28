@@ -4,7 +4,16 @@ import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { archiveVehicle } from "@/app/(dashboard)/vehicles/actions";
 
-export function ArchiveVehicleDialog({ vehicleId, nickname }: { vehicleId: string; nickname: string }) {
+export function ArchiveVehicleDialog({
+  vehicleId,
+  nickname,
+  label = "Remover veículo",
+}: {
+  vehicleId: string;
+  nickname: string;
+  /** Texto do botão que abre o diálogo — "Remover" cabe melhor numa linha de tabela. */
+  label?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [confirmation, setConfirmation] = useState("");
   const action = archiveVehicle.bind(null, vehicleId);
@@ -15,7 +24,7 @@ export function ArchiveVehicleDialog({ vehicleId, nickname }: { vehicleId: strin
   return (
     <>
       <Button type="button" variant="destructive" size="sm" onClick={() => setOpen(true)}>
-        Remover veículo
+        {label}
       </Button>
 
       {open && (
