@@ -154,6 +154,13 @@ pedido explícito novo.
   também liga `handle_battery_reading` a `AFTER UPDATE OF voltage` (o
   trigger original só rodava em INSERT) — sem isso, corrigir a leitura mais
   recente de um veículo não reavaliaria o bloqueio/alerta de bateria.
+  `BatteryReadingForm` também tem um campo opcional de data/hora
+  (`type="datetime-local"`, `max` travado em "agora") pra lançar leitura de
+  dia atrasado — sem isso não dava pra registrar retroativo, mesmo o banco
+  já suportando desde a Fase 2 (o trigger de bloqueio já ignorava leitura
+  fora de ordem, só a mais recente decide o status atual; nada mudou nesse
+  trigger). Quando o campo fica em branco, `readAt` não é enviado e o
+  servidor assume "agora" (mesmo default de antes).
   `src/app/(dashboard)/battery/` (rota `/battery`, link "Baterias" na
   sidebar/nav mobile) é a visão geral pedida pelo cliente pra bater o olho
   em todos os jet skis de uma vez, no mesmo formato de planilha
