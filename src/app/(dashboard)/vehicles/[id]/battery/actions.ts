@@ -50,3 +50,25 @@ export async function updateBatteryReading(
   revalidateBatteryViews(vehicleId);
   return { success: true };
 }
+
+/**
+ * Excluir uma leitura já lançada (ex.: lançamento duplicado/errado) —
+ * admin-only, mesmo padrão de "maintenance_events: só admin remove"
+ * (0004). Se a leitura excluída era a mais recente do veículo, o trigger
+ * `handle_battery_reading_delete` (0011) reavalia o bloqueio <12V/alerta
+ * no banco a partir da leitura que sobrou.
+ */
+export async function deleteBatteryReading(
+  readingId: string,
+  vehicleId: string
+): Promise<BatteryActionState> {
+  await requireAdmin();
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("battery_readings").delete().eq("id", readingId);
+
+  if (error) return { error: `Erro ao excluir: ${error.message}` };
+
+  revalidateBatteryViews(vehicleId);
+  return { success: true };
+}

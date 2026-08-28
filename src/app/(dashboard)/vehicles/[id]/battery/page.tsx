@@ -6,6 +6,7 @@ import { VehicleStatusBadge } from "@/components/vehicles/vehicle-status-badge";
 import { BatteryTrendChart } from "@/components/battery/battery-trend-chart";
 import { BatteryReadingForm } from "@/components/battery/battery-reading-form";
 import { EditBatteryReadingDialog } from "@/components/battery/edit-battery-reading-dialog";
+import { DeleteBatteryReadingButton } from "@/components/battery/delete-battery-reading-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BatteryReading, Vehicle } from "@/types/domain";
 
@@ -80,12 +81,15 @@ export default async function VehicleBatteryPage({
                         <td className="px-6 py-2 text-muted-foreground">{r.notes ?? "—"}</td>
                         {isAdmin && (
                           <td className="px-6 py-2">
-                            <EditBatteryReadingDialog
-                              readingId={r.id}
-                              vehicleId={id}
-                              voltage={r.voltage}
-                              notes={r.notes}
-                            />
+                            <div className="flex items-center gap-1">
+                              <EditBatteryReadingDialog
+                                readingId={r.id}
+                                vehicleId={id}
+                                voltage={r.voltage}
+                                notes={r.notes}
+                              />
+                              <DeleteBatteryReadingButton readingId={r.id} vehicleId={id} />
+                            </div>
                           </td>
                         )}
                       </tr>

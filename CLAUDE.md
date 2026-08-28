@@ -161,6 +161,17 @@ pedido explícito novo.
   fora de ordem, só a mais recente decide o status atual; nada mudou nesse
   trigger). Quando o campo fica em branco, `readAt` não é enviado e o
   servidor assume "agora" (mesmo default de antes).
+  Excluir uma leitura (`0011_battery_reading_delete.sql`, também
+  admin-only, mesmo padrão de "maintenance_events: só admin remove") via
+  `DeleteBatteryReadingButton` — confirmação simples (`window.confirm`),
+  não o fluxo pesado de digitar palavra-chave usado pra excluir veículo
+  (aqui é só um ponto de dado, não custo histórico). Diferente do
+  UPDATE, um DELETE não tem `NEW` — o trigger
+  `handle_battery_reading_delete` busca de novo qual leitura sobrou como
+  mais recente do veículo e reavalia o bloqueio/alerta a partir dela (ou
+  libera o bloqueio se não sobrou nenhuma leitura), senão excluir a
+  leitura que causou ou resolveu um bloqueio deixaria o veículo "preso"
+  no status errado.
   `src/app/(dashboard)/battery/` (rota `/battery`, link "Baterias" na
   sidebar/nav mobile) é a visão geral pedida pelo cliente pra bater o olho
   em todos os jet skis de uma vez, no mesmo formato de planilha
@@ -240,7 +251,10 @@ pedido explícito novo.
   `refuels` e o enum `payment_method`; `0009_vehicle_soft_delete.sql` =
   `vehicles.deleted_at`; `0010_battery_reading_edit.sql` = policy de update
   admin-only em `battery_readings` + trigger de bloqueio <12V também em
-  UPDATE, pra permitir corrigir uma leitura já lançada).
+  UPDATE, pra permitir corrigir uma leitura já lançada;
+  `0011_battery_reading_delete.sql` = policy de delete admin-only em
+  `battery_readings` + trigger que reavalia o bloqueio/alerta a partir da
+  leitura que sobrou como mais recente, quando uma leitura é excluída).
   `supabase/seed.sql` — dados de demonstração (ainda não aplicado pelo
   usuário).
 - Dashboards/relatórios: `src/lib/reports/aggregate.ts` (agregação pura em
