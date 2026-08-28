@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { BatteryOverviewRow } from "@/lib/battery/overview";
+import { VEHICLE_TYPE_LABELS, type VehicleType } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
 function formatDay(dateKey: string) {
@@ -11,13 +12,15 @@ export function BatteryOverviewTable({
   rows,
   dateKeys,
   vehicleHrefById,
+  vehicleTypeById,
 }: {
   rows: BatteryOverviewRow[];
   dateKeys: string[];
   vehicleHrefById: Map<string, string>;
+  vehicleTypeById: Map<string, VehicleType>;
 }) {
   if (rows.length === 0) {
-    return <p className="p-8 text-center text-sm text-muted-foreground">Nenhum jet ski cadastrado ainda.</p>;
+    return <p className="p-8 text-center text-sm text-muted-foreground">Nenhum veículo cadastrado ainda.</p>;
   }
 
   return (
@@ -25,7 +28,8 @@ export function BatteryOverviewTable({
       <table className="w-full text-sm">
         <thead className="border-b border-border text-left text-muted-foreground">
           <tr>
-            <th className="sticky left-0 z-10 whitespace-nowrap bg-card px-4 py-3 font-medium">Jet ski</th>
+            <th className="sticky left-0 z-10 whitespace-nowrap bg-card px-4 py-3 font-medium">Veículo</th>
+            <th className="whitespace-nowrap px-4 py-3 font-medium">Tipo</th>
             {dateKeys.map((date) => (
               <th key={date} className="whitespace-nowrap px-4 py-3 text-center font-medium">
                 {formatDay(date)}
@@ -40,6 +44,9 @@ export function BatteryOverviewTable({
                 <Link href={vehicleHrefById.get(row.vehicleId) ?? "#"} className="font-medium hover:underline">
                   {row.nickname}
                 </Link>
+              </td>
+              <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                {VEHICLE_TYPE_LABELS[vehicleTypeById.get(row.vehicleId) ?? "outro"]}
               </td>
               {row.cells.map((cell) => (
                 <td key={cell.date} className="px-4 py-3 text-center">

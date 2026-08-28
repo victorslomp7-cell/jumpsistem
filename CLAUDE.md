@@ -174,10 +174,14 @@ pedido explícito novo.
   no status errado.
   `src/app/(dashboard)/battery/` (rota `/battery`, link "Baterias" na
   sidebar/nav mobile) é a visão geral pedida pelo cliente pra bater o olho
-  em todos os jet skis de uma vez, no mesmo formato de planilha
-  (linha = jet ski, coluna = dia, seletor 3/7/14/30 dias via
-  `?days=`) que a empresa já usava manualmente — lê só `type='jet_ski'` e
-  `deleted_at is null`; a montagem pura da matriz (uma leitura por dia, a
+  em todos os veículos de uma vez — jet ski **e lancha** (pedido explícito
+  do cliente: "as lanchas também tem bateria"; até então só mostrava jet
+  ski, seguindo o print da planilha original), no mesmo formato de
+  planilha (linha = veículo, coluna = dia, seletor 3/7/14/30 dias via
+  `?days=`) que a empresa já usava manualmente — lê todo veículo com
+  `deleted_at is null` (sem filtro de tipo), com uma coluna "Tipo" na
+  tabela pra diferenciar jet ski de lancha; a montagem pura da matriz (uma
+  leitura por dia, a
   mais recente quando há mais de uma) está em `src/lib/battery/overview.ts`
   (`buildBatteryOverview`, testado), incluindo o cuidado de bucketizar por
   dia civil em `America/Sao_Paulo` (não o fuso do servidor, que na Vercel é

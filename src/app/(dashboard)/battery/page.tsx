@@ -9,10 +9,12 @@ import type { Vehicle } from "@/types/domain";
 
 /*
  * Visão geral de bateria — pedida pelo cliente pra bater o olho em todos os
- * jet skis de uma vez (nome + tensão por dia), no mesmo formato da planilha
- * que a empresa já usa hoje pra acompanhar isso manualmente. Não é
- * relatório financeiro (não é admin-only) — é operacional, mesma visibilidade
- * das outras telas de bateria/horas que o funcionário já usa em campo.
+ * veículos de uma vez (nome + tensão por dia), no mesmo formato da planilha
+ * que a empresa já usa hoje pra acompanhar isso manualmente. Cobre jet ski
+ * E lancha (pedido explícito do cliente: "as lanchas também tem bateria") —
+ * a tabela tem uma coluna "Tipo" pra diferenciar. Não é relatório
+ * financeiro (não é admin-only) — é operacional, mesma visibilidade das
+ * outras telas de bateria/horas que o funcionário já usa em campo.
  *
  * Nada aqui é apagado (o cliente pediu explicitamente histórico
  * permanente): battery_readings não tem nenhuma rotina de limpeza — as
@@ -67,12 +69,11 @@ export default async function BatteryOverviewPage({
   const { data: vehicles } = await supabase
     .from("vehicles")
     .select("*")
-    .eq("type", "jet_ski")
     .is("deleted_at", null)
     .order("nickname");
 
-  const jetSkis = (vehicles as Vehicle[] | null) ?? [];
-  const vehicleIds = jetSkis.map((v) => v.id);
+  const vehicleList = (vehicles as Vehicle[] | null) ?? [];
+  const vehicleIds = vehicleList.map((v) => v.id);
 
   // Corte um pouco mais largo que a janela exibida (1 dia antes do primeiro
   // dia da tabela) — só evita perder leitura de borda; quem decide o que
@@ -91,12 +92,13 @@ export default async function BatteryOverviewPage({
       : { data: [] as { vehicle_id: string; voltage: number; read_at: string }[] };
 
   const rows = buildBatteryOverview(
-    jetSkis.map((v) => ({ id: v.id, nickname: v.nickname })),
+    vehicleList.map((v) => ({ id: v.id, nickname: v.nickname })),
     (readings as { vehicle_id: string; voltage: number; read_at: string }[] | null) ?? [],
     dateKeys
   );
 
-  const vehicleHrefById = new Map(jetSkis.map((v) => [v.id, `/vehicles/${v.id}/battery`]));
+  const vehicleHrefById = new Map(vehicleList.map((v) => [v.id, `/vehicles/${v.id}/battery`]));
+  const vehicleTypeById = new Map(vehicleList.map((v) => [v.id, v.type]));
 
   const prevMonthKey = shiftMonthKey(monthKey, -1);
   const nextMonthKey = shiftMonthKey(monthKey, 1);
@@ -109,8 +111,8 @@ export default async function BatteryOverviewPage({
           <h1 className="text-2xl font-semibold">Baterias — visão geral</h1>
           <p className="text-sm text-muted-foreground">
             {isMonthMode
-              ? `Tensão de cada jet ski por dia — ${formatMonthLabel(monthKey)}`
-              : `Tensão de cada jet ski por dia · ${jetSkis.length} jet ski${jetSkis.length === 1 ? "" : "s"}`}
+              ? `Tensão de cada veículo por dia — ${formatMonthLabel(monthKey)}`
+              : `Tensão de cada veículo por dia · ${vehicleList.length} veículo${vehicleList.length === 1 ? "" : "s"}`}
           </p>
         </div>
         <div className="flex gap-1 rounded-full border border-border p-0.5">
@@ -157,7 +159,12 @@ export default async function BatteryOverviewPage({
       )}
 
       <Card className="overflow-hidden p-0">
-        <BatteryOverviewTable rows={rows} dateKeys={dateKeys} vehicleHrefById={vehicleHrefById} />
+        <BatteryOverviewTable
+          rows={rows}
+          dateKeys={dateKeys}
+          vehicleHrefById={vehicleHrefById}
+          vehicleTypeById={vehicleTypeById}
+        />
       </Card>
 
       <Card className="flex flex-wrap items-center justify-between gap-4 p-4">
