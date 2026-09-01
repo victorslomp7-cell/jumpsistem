@@ -36,6 +36,7 @@ export function BatteryTrendChart({ readings }: { readings: BatteryReading[] }) 
           <Tooltip
             formatter={(value) => [`${value}V`, "Bateria"] as [string, string]}
             contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
+            cursor={{ stroke: "var(--border)" }}
           />
           <ReferenceLine y={BATTERY_MIN_VOLTAGE} stroke="var(--destructive)" strokeDasharray="4 4" />
           <Line type="monotone" dataKey="voltage" stroke="var(--primary)" strokeWidth={2} dot={{ r: 3 }} />

@@ -27,13 +27,14 @@ export function MaintenanceProgressionChart({ data }: { data: MaintenanceProgres
           <Tooltip
             formatter={(value, name) => [`R$ ${Number(value).toFixed(2)}`, name]}
             contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
+            cursor={{ stroke: "var(--border)" }}
           />
           <Legend />
           <Line
             type="stepAfter"
             dataKey="jet_ski"
             name="Jet ski"
-            stroke="var(--color-chart-jetski)"
+            stroke="var(--chart-jetski)"
             strokeWidth={2}
             dot={{ r: 2 }}
           />
@@ -41,7 +42,7 @@ export function MaintenanceProgressionChart({ data }: { data: MaintenanceProgres
             type="stepAfter"
             dataKey="lancha"
             name="Lancha"
-            stroke="var(--color-chart-lancha)"
+            stroke="var(--chart-lancha)"
             strokeWidth={2}
             dot={{ r: 2 }}
           />

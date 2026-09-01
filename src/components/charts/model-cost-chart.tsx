@@ -4,8 +4,8 @@ import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis
 import type { ModelComparisonRow } from "@/lib/reports/compare-models";
 
 const COLOR_BY_TYPE = {
-  jet_ski: "var(--color-chart-jetski)",
-  lancha: "var(--color-chart-lancha)",
+  jet_ski: "var(--chart-jetski)",
+  lancha: "var(--chart-lancha)",
   outro: "var(--muted-foreground)",
 } as const;
 
@@ -30,6 +30,7 @@ export function ModelCostChart({ rows }: { rows: ModelComparisonRow[] }) {
           <Tooltip
             formatter={(value) => [`R$ ${Number(value).toFixed(2)}`, "Manutenção"]}
             contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
+            cursor={{ fill: "var(--foreground)", opacity: 0.06 }}
           />
           <Bar dataKey="cost" radius={[4, 4, 0, 0]}>
             {data.map((d) => (

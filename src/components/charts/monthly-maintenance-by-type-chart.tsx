@@ -29,10 +29,11 @@ export function MonthlyMaintenanceByTypeChart({ data }: { data: MonthlyMaintenan
           <Tooltip
             formatter={(value, name) => [`R$ ${Number(value).toFixed(2)}`, name]}
             contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
+            cursor={{ fill: "var(--foreground)", opacity: 0.06 }}
           />
           <Legend />
-          <Bar dataKey="jet_ski" name="Jet ski" stackId="tipo" fill="var(--color-chart-jetski)" radius={[0, 0, 0, 0]} />
-          <Bar dataKey="lancha" name="Lancha" stackId="tipo" fill="var(--color-chart-lancha)" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="jet_ski" name="Jet ski" stackId="tipo" fill="var(--chart-jetski)" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="lancha" name="Lancha" stackId="tipo" fill="var(--chart-lancha)" radius={[0, 0, 0, 0]} />
           <Bar dataKey="outro" name="Outro" stackId="tipo" fill="var(--muted-foreground)" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>

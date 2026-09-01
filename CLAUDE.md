@@ -284,15 +284,36 @@ pedido explícito novo.
   uma cor por tipo — jet ski dourado, lancha num azul próprio — igual ao
   gráfico de tendência de bateria; ver `maintenanceProgressionByVehicleType`
   em `aggregate.ts`). Cor de "lancha" nesses gráficos é o token
-  `--color-chart-lancha` (não o navy da marca direto), porque o navy da
-  marca some sobre o fundo do dashboard, que também é navy desde que o
-  tema escuro passou a valer no sistema inteiro — ver comentário completo
-  em `globals.css`. Esse token já levou um ajuste: a primeira tentativa
-  (`#8fb4d6`) tecnicamente contrastava com o fundo, mas era parecida demais
-  com `--muted-foreground` (texto secundário/grade do gráfico) e o cliente
-  reportou que "a lancha... acaba sumindo" mesmo assim — valor atual
-  (`#45a3ff`) é bem mais saturado/distinto, não só "contrastante o
-  suficiente no papel".
+  `--chart-lancha` (não o navy da marca direto), porque o navy da marca
+  some sobre o fundo do dashboard, que também é navy desde que o tema
+  escuro passou a valer no sistema inteiro — ver comentário completo em
+  `globals.css`.
+
+  **Bug real já corrigido, cuidado pra não reintroduzir**: dentro dos
+  componentes de gráfico (`fill`/`stroke` inline nos elementos do
+  Recharts), sempre referenciar `var(--chart-jetski)`/`var(--chart-lancha)`
+  — NUNCA `var(--color-chart-jetski)`/`var(--color-chart-lancha)` (o
+  prefixo `--color-*` gerado pelo `@theme inline` do Tailwind). Os dois
+  nomes existem, mas só o primeiro muda de valor por tema: `--color-chart-*`
+  é declarado uma única vez, em `:root`, e nunca é redeclarado dentro de
+  `[data-theme="jump-dark"]` — então em qualquer elemento (mesmo dentro do
+  dashboard, que tem `data-theme="jump-dark"` num ancestral) ele sempre
+  resolve pro valor do tema claro. Já os *utilitários Tailwind*
+  (`bg-chip-part`, `text-chip-revision` etc., usados em
+  `event-type-badge.tsx`) compilam direto pro token sem o prefixo
+  (`var(--chip-part)`), então esses sempre funcionaram — só o `fill`/`stroke`
+  escrito à mão nos gráficos usava o nome errado. Confirmado ao vivo com
+  Playwright + `getComputedStyle` numa rota de teste temporária (não
+  versionada): "Lancha" aparecia como `rgb(18, 58, 92)` (o navy do tema
+  claro) em vez de `rgb(69, 163, 255)` (`#45a3ff`, o valor do tema escuro)
+  — o ajuste de cor da entrada anterior deste changelog nunca chegou a
+  fazer efeito de verdade por causa desse nome errado. Corrigido em
+  `monthly-maintenance-by-type-chart.tsx`, `maintenance-progression-chart.tsx`
+  e `model-cost-chart.tsx`. De quebra, também temeatizado o `cursor` do
+  `<Tooltip>` dos gráficos (Recharts usa por padrão um destaque cinza-claro
+  não tematizado ao passar o mouse — `fill="#ccc"` sólido pras barras,
+  `stroke="#ccc"` pras linhas — visível e destoante sobre o fundo navy;
+  agora usa tokens do tema com opacidade baixa).
 - Comparativo por modelo: `src/lib/reports/compare-models.ts` (puro,
   testado) agrupa veículos por `model` (não por tipo — inclui arquivados,
   já que o objetivo é sinalizar modelo problemático mesmo que já removido)

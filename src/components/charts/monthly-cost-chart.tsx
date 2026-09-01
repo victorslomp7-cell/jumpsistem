@@ -29,6 +29,7 @@ export function MonthlyCostChart({ data }: { data: MonthlyCost[] }) {
           <Tooltip
             formatter={(value) => [`R$ ${Number(value).toFixed(2)}`, "Manutenção"]}
             contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8 }}
+            cursor={{ fill: "var(--foreground)", opacity: 0.06 }}
           />
           <Bar dataKey="cost" name="Manutenção" fill="var(--color-jump-gold)" radius={[4, 4, 0, 0]} />
         </BarChart>
