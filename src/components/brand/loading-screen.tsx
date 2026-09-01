@@ -13,15 +13,15 @@ import Image from "next/image";
 export function LoadingScreen({ label = "Carregando…" }: { label?: string }) {
   return (
     <div role="status" aria-live="polite" className="flex flex-col items-center gap-4">
-      <div className="relative flex size-24 items-center justify-center">
-        <div className="absolute inset-0 rounded-full border-4 border-jump-gold/20" />
-        <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-jump-gold border-r-jump-gold" />
+      <div className="relative flex size-36 items-center justify-center">
+        <div className="absolute inset-0 rounded-full border-[6px] border-jump-gold/20" />
+        <div className="absolute inset-0 animate-spin rounded-full border-[6px] border-transparent border-t-jump-gold border-r-jump-gold" />
         <Image
           src="/brand/jump-crown.png"
           alt="Jump Embarcações"
           width={218}
           height={88}
-          className="relative h-9 w-auto"
+          className="relative h-14 w-auto"
           priority
         />
       </div>
