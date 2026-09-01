@@ -6,12 +6,13 @@ import { cn } from "@/lib/utils";
  * do dashboard (sidebar), como pediu o cliente, pra manter a marca sempre
  * visível no mesmo lugar.
  *
- * A coroa em `/brand/jump-crown.png` é a arte real enviada pelo cliente
- * (recortada da logo original, fundo transparente — funciona tanto sobre o
- * navy do tema escuro quanto sobre o claro do dashboard). O texto "JUMP" /
- * "EMBARCAÇÕES" continua sendo tipografia do próprio app (não faz parte do
- * PNG), pra herdar a cor de cada tema automaticamente e não ficar preso ao
- * nome "JUMP COTAS NÁUTICAS" que aparece em outra variante da arte.
+ * A coroa em `/brand/jump-crown.png` é a arte real da logo (recortada do
+ * PDF vetorial oficial enviado pelo cliente, fundo transparente — funciona
+ * tanto sobre o navy do tema escuro quanto sobre o claro do dashboard). O
+ * texto "JUMP" / "EMBARCAÇÕES" continua sendo tipografia do próprio app
+ * (não faz parte do PNG), pra herdar a cor de cada tema automaticamente e
+ * não ficar preso ao nome "JUMP COTAS NÁUTICAS" que aparece na variante
+ * de fundo navy da mesma arte.
  */
 export function BrandMark({ className, compact }: { className?: string; compact?: boolean }) {
   return (
@@ -19,8 +20,8 @@ export function BrandMark({ className, compact }: { className?: string; compact?
       <Image
         src="/brand/jump-crown.png"
         alt="Jump Embarcações"
-        width={102}
-        height={40}
+        width={218}
+        height={88}
         className="h-8 w-auto shrink-0"
         priority
       />

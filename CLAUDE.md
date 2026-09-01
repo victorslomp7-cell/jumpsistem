@@ -97,6 +97,16 @@ centralizada sobre fundo navy (script Python ad-hoc com Pillow, não
 versionado — se precisar regenerar em outro tamanho, repetir o recorte a
 partir de `public/brand/jump-crown.png`).
 
+`public/brand/jump-crown.png` foi **substituída** depois: o cliente enviou
+o PDF vetorial oficial da logo como anexo de verdade (finalmente — as
+tentativas anteriores só coladas no chat nunca geravam arquivo). Reextraí
+a coroa a partir do render do PDF em alta resolução (300dpi, via PyMuPDF)
+em vez do webp anterior — mesmo desenho, bem mais nítido (sem os
+artefatos de compressão do webp), fundo removido por chroma-key na cor
+navy exata do PDF (`#073D62`) em vez de recorte manual. `BrandMark` e
+`icon-192`/`icon-512` foram atualizados pra usar essa versão; testado de
+novo sobre navy e claro sem halo.
+
 **Personalização visual — decisão fechada**: perguntado explicitamente se
 "robusto em personalização" significava querer uma tela de configurações
 para o admin trocar cor/logo sozinho no futuro — cliente respondeu que
@@ -348,9 +358,15 @@ pedido explícito novo.
   rota tinha `loading.tsx`/`error.tsx`** — toda navegação ficava em branco
   até o Supabase responder por inteiro, e uma exceção não tratada caía na
   tela de erro genérica do Next, fora da identidade visual. Adicionado:
-  `src/app/(dashboard)/loading.tsx` (skeleton único, no nível do route
-  group — cobre toda rota do dashboard de uma vez, sidebar/topbar continuam
-  renderizados fora do Suspense); `(dashboard)/error.tsx` e `(auth)/error.tsx`
+  `src/app/(dashboard)/loading.tsx` (no nível do route group — cobre toda
+  rota do dashboard de uma vez, sidebar/topbar continuam renderizados fora
+  do Suspense) + `(auth)/loading.tsx` + `src/app/loading.tsx` (raiz), todos
+  usando `src/components/brand/loading-screen.tsx` — pedido explícito do
+  cliente depois de ver o skeleton genérico ("toda vez que o sistema
+  estiver carregando alguma tela, deve aparecer essa tela do carregamento":
+  a coroa centralizada num anel dourado girando, `animate-spin`, sobre uma
+  trilha dourada fraca — as cores da marca, não um esqueleto cinza
+  genérico); `(dashboard)/error.tsx` e `(auth)/error.tsx`
   (usam `retry`, não `reset` — Next 16 trocou a API do error boundary, ver
   `node_modules/next/dist/docs/.../error.md`); `src/app/global-error.tsx`
   (fallback do próprio root layout — precisa `<html>`/`<body>` e
