@@ -335,6 +335,33 @@ pedido explícito novo.
 - Testes: `npm run test` (Vitest) cobre as regras puras críticas
   (`src/lib/battery/ingestion.test.ts`, `src/lib/hours/revision.test.ts`,
   `src/lib/reports/aggregate.test.ts`) — também rodado no CI.
+- Performance/polish (pedido do cliente: "sistema... meio lento pra
+  carregar as interfaces", "cara de pro"): investiguei com o analisador de
+  bundle nativo do Next 16.1+ (`next experimental-analyze`) antes de mexer
+  em qualquer coisa — o Recharts (maior dependência de cliente, ~380KB) já
+  é code-splitted certinho só pras rotas com gráfico (`/reports`,
+  `/reports/[vehicleId]`, `/reports/comparativo`, `/vehicles/[id]/battery`),
+  confirmado via `page_client-reference-manifest.js` de cada rota — não
+  precisou de `next/dynamic` manual. `lucide-react`/`date-fns`/`recharts`
+  já entram na lista padrão de `optimizePackageImports` do Next 16, sem
+  precisar declarar em `next.config.ts`. O gargalo real era outro: **nenhuma
+  rota tinha `loading.tsx`/`error.tsx`** — toda navegação ficava em branco
+  até o Supabase responder por inteiro, e uma exceção não tratada caía na
+  tela de erro genérica do Next, fora da identidade visual. Adicionado:
+  `src/app/(dashboard)/loading.tsx` (skeleton único, no nível do route
+  group — cobre toda rota do dashboard de uma vez, sidebar/topbar continuam
+  renderizados fora do Suspense); `(dashboard)/error.tsx` e `(auth)/error.tsx`
+  (usam `retry`, não `reset` — Next 16 trocou a API do error boundary, ver
+  `node_modules/next/dist/docs/.../error.md`); `src/app/global-error.tsx`
+  (fallback do próprio root layout — precisa `<html>`/`<body>` e
+  `import "./globals.css"` próprios, já que substitui o layout raiz
+  inteiro); `src/app/not-found.tsx` (404 com a marca, `data-theme="jump-dark"`
+  explícito porque fica fora dos grupos (auth)/(dashboard)). Nenhuma
+  mudança de banco ou de query — os poucos `await` sequenciais que restam
+  (ex. `/battery`) são dependência real (precisa do id do veículo antes de
+  buscar leituras), não descuido. Parte da lentidão pode ser cold start do
+  plano Hobby da Vercel (fora do meu controle via código) — se persistir
+  depois desse deploy, vale checar o Speed Insights do painel.
 
 ## Convenções
 
